@@ -23,6 +23,9 @@
 
 // Select Download method as "competition"
 #pragma competitionControl(Competition)
+#pragma autonomousDuration(20)
+#pragma userControlDuration(9999999)
+
 
 //Main competition background code...do not modify!
 #include "Vex_Competition_Includes.c"
@@ -113,7 +116,35 @@ void smack()
 	wait1Msec(200);
 	motor[StarGrabber] = 0;
 }
+void GSautonomous()
+{
+	float timeToMid = 4;
+	motor[StarGrabber] = -50;
+	move('B', timeToMid, true);
+	liftStar();
+	motor[StarGrabber] = 50;
+	wait1Msec(800);
+	motor[StarGrabber] = 0;
+	move('F', 2, false);
+	// has pushed star over
 
+	// turn right and smack stars on fence
+	if (SensorValue[jump] == 0) // jump is in
+	{
+		move('R', 1.1, false); // for left side
+	}
+	else
+	{
+		move('L', 1.1, false); // for right side
+	}
+	move('B', 1, false);
+	smack();
+	move('B', 1, false);
+	smack();
+	move('B', 1, false);
+	smack();
+	//putDownLift();
+}
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*                                                                           */
@@ -150,34 +181,9 @@ void pre_auton()
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-task usercontrol()
+task autonomous()
 {
-	float timeToMid = 4;
-	motor[StarGrabber] = -50;
-	move('B', timeToMid, true);
-	liftStar();
-	motor[StarGrabber] = 50;
-	wait1Msec(800);
-	motor[StarGrabber] = 0;
-	move('F', 2, false);
-	// has pushed star over
-
-	// turn right and smack stars on fence
-	if (SensorValue[jump] == 0) // jump is in
-	{
-		move('R', 1.1, false); // for left side
-	}
-	else
-	{
-		move('L', 1.1, false); // for right side
-	}
-	move('B', 1, false);
-	//smack();
-	move('B', 1, false);
-	//smack();
-	move('B', 1, false);
-	//smack();
-	//putDownLift();
+	GSautonomous();
 }
 
 /*---------------------------------------------------------------------------*/
@@ -190,13 +196,13 @@ task usercontrol()
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-task autonomous()
+task usercontrol()
 {
   // User control code here, inside the loop
 
   while (true)
   {
-		if (vexRT[Ch3] != 1)
+		if (vexRT[Ch3] != 1) // Right jostick circle control moves forward and back
 		{
 			motor[LeftFrontWheel] = vexRT[Ch3];
 			motor[LeftBackWheel] = -vexRT[Ch3];
@@ -217,7 +223,7 @@ task autonomous()
 			motor[RightBackWheel] = 0;
 		}
 
-		if (vexRT[Btn5D] == 1)
+		if (vexRT[Btn5D] == 1) // 5 Lift 2 arms up and down
 		{
 			motor[LiftLeft] = -127;
 			motor[LiftRight] = 127;
@@ -233,13 +239,13 @@ task autonomous()
 			motor[LiftRight] = 0;
 		}
 
-		if (vexRT[Btn6D] == 1)
+		if (vexRT[Btn6D] == 1) // 6 is open and close of star grabber arm- one arm moves 360 degrees
 		{
-			motor[StarGrabber] = -50;
+			motor[StarGrabber] = -30;
 		}
 		else if (vexRT[Btn6U] == 1)
 		{
-			motor[StarGrabber] = 50;
+			motor[StarGrabber] = 30;
 		}
 		else
 		{
@@ -265,7 +271,7 @@ task autonomous()
 			motor[HangRight] = 0;
 		}
 
-		if (vexRT[Btn7L] == 1)
+		if (vexRT[Btn7L] == 1) // handles left arm alone using left and right 7
 		{
 			motor[HangLeft] = HANG_LEFT_UP;
 		}
@@ -278,7 +284,7 @@ task autonomous()
 			motor[HangLeft] = 0;
 		}
 
-		if (vexRT[Btn8L] == 1)
+		if (vexRT[Btn8L] == 1) // handles right arm alone using lefgt and right 8
 		{
 			motor[HangRight] = HANG_RIGHT_UP;
 		}
@@ -290,5 +296,12 @@ task autonomous()
 		{
 			motor[HangRight] = 0;
 		}
+		// run autonomous when 8Up is pushed
+
+			if (vexRT[Btn8U] == 1)
+		{
+			GSautonomous();
+		}
+
   }
 }
