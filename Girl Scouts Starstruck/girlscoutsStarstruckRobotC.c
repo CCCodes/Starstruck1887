@@ -302,6 +302,15 @@ task usercontrol()
 		{
 			GSautonomous();
 		}
+		// 8D moves star grabber arm fast
+		if (vexRT[Btn8D] == 1)
+		{
+			motor[StarGrabber] = 70;
+		}
+		else
+		{
+			motor[StarGrabber] = 0;
+		}
 
   }
 }
