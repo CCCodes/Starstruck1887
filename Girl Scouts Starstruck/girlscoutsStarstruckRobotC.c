@@ -2,10 +2,11 @@
 #pragma config(Sensor, dgtl2,  jump,           sensorDigitalIn)
 #pragma config(Motor,  port1,           RightBackWheel, tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,           RightFrontWheel, tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port3,           StarGrabber,   tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port3,           StarGrabberRight, tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port4,           LiftRight,     tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port5,           LiftLeft,      tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port6,           HangLeft,      tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port7,           StarGrabberLeft, tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port8,           HangRight,     tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port9,           LeftFrontWheel, tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port10,          LeftBackWheel, tmotorVex393_HBridge, openLoop)
@@ -126,20 +127,23 @@ void dropHang()
 	motor[HangRight] = 0;
 }
 
+
 void smack()
 {
+	/** comment out because stargrabber changed configuration
 	motor[StarGrabber] = 70;
 	wait1Msec(600);
 	motor[StarGrabber] = -70;
 	wait1Msec(600);
 	motor[StarGrabber] = 0;
+	**/
 }
 void GSautonomous()
 {
 	float timeToMid = 3.5;
-	motor[StarGrabber] = -70;
+//	motor[StarGrabber] = -70;
 	move('B', 4, true);
-	motor[StarGrabber] = 0;
+//	motor[StarGrabber] = 0;
 	putDownLift();
 	move('F', .2, false);
 	liftHang();
@@ -282,17 +286,20 @@ task usercontrol()
 
 		if (vexRT[Btn6D] == 1) // 6 is open and close of star grabber arm- one arm moves 360 degrees
 		{
-			motor[StarGrabber] = -50;
+			motor[StarGrabberRight] = -50;
+			motor[StarGrabberLeft] = 50;
 			continue;
 		}
 		else if (vexRT[Btn6U] == 1)
 		{
-			motor[StarGrabber] = 50;
+			motor[StarGrabberRight] = 50;
+			motor[StarGrabberLeft] = -50;
 			continue;
 		}
 		else
 		{
-			motor[StarGrabber] = 0;
+			motor[StarGrabberRight] = 0;
+			motor[StarGrabberLeft] = 0;
 		}
 
 				// control both hanging motors with button 7 U and D;
@@ -347,7 +354,7 @@ task usercontrol()
 		}
 		**/
 		// 8D moves star grabber arm fast
-		if (vexRT[Btn8D] == 1)
+/**		if (vexRT[Btn8D] == 1)
 		{
 			motor[StarGrabber] = 70;
 		}
@@ -355,5 +362,6 @@ task usercontrol()
 		{
 			motor[StarGrabber] = 0;
 		}
+		**/
   }
 }
