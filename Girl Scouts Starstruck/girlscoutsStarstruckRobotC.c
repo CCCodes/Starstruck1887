@@ -140,8 +140,8 @@ void smack()
 }
 void GSautonomous()
 {
-	motor[StarGrabberRight] = -70;
-	motor[StarGrabberLeft] = 70;
+	motor[StarGrabberRight] = -40;
+	motor[StarGrabberLeft] = 40;
 	move('B', 4, true);
 	motor[StarGrabberRight] = 0;
 	motor[StarGrabberLeft] = 0;
@@ -317,8 +317,8 @@ task usercontrol()
 		// 8D moves star grabber arm fast
 		if (vexRT[Btn8D] == 1)
 		{
-			motor[StarGrabberRight] = -80;
-			motor[StarGrabberLeft] = 80;
+			motor[StarGrabberRight] = -127;
+			motor[StarGrabberLeft] = 127;
 			wait1Msec(2000);
 			motor[StarGrabberRight] = 0;
 			motor[StarGrabberLeft] = 0;
