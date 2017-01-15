@@ -334,11 +334,11 @@ task usercontrol()
 		}
 		// run autonomous when 8Up is pushed
 
-		/**		if (vexRT[Btn8U] == 1)
+		if (vexRT[Btn8U] == 1)
 		{
 		GSautonomous();
 		}
-		**/
+
 		// 8D moves star grabber arm fast
 		if (vexRT[Btn8D] == 1)
 		{
