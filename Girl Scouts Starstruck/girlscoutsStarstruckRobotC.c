@@ -91,13 +91,32 @@ void move(char direction, float time, bool useBumper)
 	wait1Msec(1000);
 }
 
+void stopStarGrabber()
+{
+	motor[StarGrabberLeft] = 0;
+	motor[StarGrabberRight] = 0;
+}
+
 void liftStar()
 {
 	motor[LiftLeft] = 127;
 	motor[LiftRight] = -127;
-	wait1Msec(1450);
+	wait1Msec(1200);
 	motor[LiftLeft] = 0;
 	motor[LiftRight] = 0;
+	//lifted part of the way
+
+	motor[StarGrabberLeft] = -30;
+	motor[StarGrabberRight] = 30;
+	wait1Msec(300);
+	stopStarGrabber();
+	//flatten star grabber
+
+	wait1Msec(200);
+	motor[StarGrabberLeft] = 127;
+	motor[StarGrabberRight] = -127;
+	wait1Msec(300);
+	stopStarGrabber();
 }
 
 void putDownLift()
@@ -138,16 +157,22 @@ void smack()
 	motor[StarGrabber] = 0;
 	**/
 }
+
+
 void GSautonomous()
 {
+
 	motor[StarGrabberRight] = -40;
 	motor[StarGrabberLeft] = 40;
+	wait1Msec(1000);
+	stopStarGrabber();
 	move('B', 4, true);
-	motor[StarGrabberRight] = 0;
-	motor[StarGrabberLeft] = 0;
 	move('F', .2, false);
+	motor[StarGrabberRight] = 40;
+	motor[StarGrabberLeft] = -40;
+	wait1Msec(600);
+	stopStarGrabber();
 	liftStar();
-	putDownLift();
 
 	//if (SensorValue[jump] == 0) // jump is in
 }
