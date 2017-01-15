@@ -36,38 +36,38 @@ void move(char direction, float time, bool useBumper)
 	switch (direction)
 	{
 	case 'F':
-	  motor[LeftFrontWheel] = 127;
-	  motor[LeftBackWheel] = -127;
-	  motor[RightFrontWheel] = -127;
-	  motor[RightBackWheel] = 127;
-	  break;
+		motor[LeftFrontWheel] = 127;
+		motor[LeftBackWheel] = -127;
+		motor[RightFrontWheel] = -127;
+		motor[RightBackWheel] = 127;
+		break;
 	case 'B':
-	  motor[LeftFrontWheel] = -127;
-	  motor[LeftBackWheel] = 127;
-	  motor[RightFrontWheel] = 127;
-	  motor[RightBackWheel] = -127;
-	  break;
+		motor[LeftFrontWheel] = -127;
+		motor[LeftBackWheel] = 127;
+		motor[RightFrontWheel] = 127;
+		motor[RightBackWheel] = -127;
+		break;
 	case 'R':
-	  motor[LeftFrontWheel] = 127;
-	  motor[LeftBackWheel] = -127;
-	  motor[RightFrontWheel] = 127;
-	  motor[RightBackWheel] = -127;
-	  break;
+		motor[LeftFrontWheel] = 127;
+		motor[LeftBackWheel] = -127;
+		motor[RightFrontWheel] = 127;
+		motor[RightBackWheel] = -127;
+		break;
 	case 'L':
-	  motor[LeftFrontWheel] = -127;
-	  motor[LeftBackWheel] = 127;
-	  motor[RightFrontWheel] = -127;
-	  motor[RightBackWheel] = 127;
-	  break;
+		motor[LeftFrontWheel] = -127;
+		motor[LeftBackWheel] = 127;
+		motor[RightFrontWheel] = -127;
+		motor[RightBackWheel] = 127;
+		break;
 	default:
-	  return;
+		return;
 	}
 
 	int countRunTimeMsec = 0;
 	if (useBumper) // use bumper if 0 is passed as the time parameter
 	{
 		// just in case the sensor is never pushed
-	 	// 1 means not pushed
+		// 1 means not pushed
 		while (SensorValue[bumper] == 1 && countRunTimeMsec < time * 1000.0)
 		{
 			wait1Msec(10);
@@ -140,55 +140,16 @@ void smack()
 }
 void GSautonomous()
 {
-	float timeToMid = 3.5;
-//	motor[StarGrabber] = -70;
+	motor[StarGrabberRight] = -70;
+	motor[StarGrabberLeft] = 70;
 	move('B', 4, true);
-//	motor[StarGrabber] = 0;
-	putDownLift();
+	motor[StarGrabberRight] = 0;
+	motor[StarGrabberLeft] = 0;
 	move('F', .2, false);
-	liftHang();
-	dropHang();
-//	move('F', 2.7, false);
-/**
-	float turnToStraighten = .4;
-	if (SensorValue[jump] == 0) // jump is in
-	{
-		move('L', turnToStraighten, false); // for left side
-	}
-	else
-	{
-		move('R', turnToStraighten, false); // for r ight side
-	}
-
-	move('B', timeToMid, true);
-	liftHang();
-	dropHang();
 	liftStar();
-	motor[StarGrabber] = 40;
-	move('B', 1, true);
-	wait1Msec(500);
-	motor[StarGrabber] = 0;
-	smack();
-	move('F', 2, false);
-	// has pushed star over
+	putDownLift();
 
-	// turn right and smack stars on fence
-	if (SensorValue[jump] == 0) // jump is in
-	{
-		move('R', .7, false); // for left side
-	}
-	else
-	{
-		move('L', .7, false); // for right side
-	}
-	move('B', .5, false);
-	smack();
-	move('B', .5, false);
-	smack();
-	move('B', .5, false);
-	smack();
-	//putDownLift();
-	**/
+	//if (SensorValue[jump] == 0) // jump is in
 }
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -202,18 +163,18 @@ void GSautonomous()
 
 void pre_auton()
 {
-  // Set bStopTasksBetweenModes to false if you want to keep user created tasks
-  // running between Autonomous and Driver controlled modes. You will need to
-  // manage all user created tasks if set to false.
-  bStopTasksBetweenModes = true;
+	// Set bStopTasksBetweenModes to false if you want to keep user created tasks
+	// running between Autonomous and Driver controlled modes. You will need to
+	// manage all user created tasks if set to false.
+	bStopTasksBetweenModes = true;
 
 	// Set bDisplayCompetitionStatusOnLcd to false if you don't want the LCD
 	// used by the competition include file, for example, you might want
 	// to display your team name on the LCD in this function.
 	// bDisplayCompetitionStatusOnLcd = false;
 
-  // All activities that occur before the competition starts
-  // Example: clearing encoders, setting servo positions, ...
+	// All activities that occur before the competition starts
+	// Example: clearing encoders, setting servo positions, ...
 }
 
 /*---------------------------------------------------------------------------*/
@@ -243,10 +204,10 @@ task autonomous()
 
 task usercontrol()
 {
-  // User control code here, inside the loop
+	// User control code here, inside the loop
 
-  while (true)
-  {
+	while (true)
+	{
 		if (vexRT[Ch3] != 1) // Right jostick circle control moves forward and back
 		{
 			motor[LeftFrontWheel] = vexRT[Ch3];
@@ -286,14 +247,14 @@ task usercontrol()
 
 		if (vexRT[Btn6D] == 1) // 6 is open and close of star grabber arm- one arm moves 360 degrees
 		{
-			motor[StarGrabberRight] = -50;
-			motor[StarGrabberLeft] = 50;
+			motor[StarGrabberRight] = -40;
+			motor[StarGrabberLeft] = 40;
 			continue;
 		}
 		else if (vexRT[Btn6U] == 1)
 		{
-			motor[StarGrabberRight] = 50;
-			motor[StarGrabberLeft] = -50;
+			motor[StarGrabberRight] = 40;
+			motor[StarGrabberLeft] = -40;
 			continue;
 		}
 		else
@@ -302,7 +263,7 @@ task usercontrol()
 			motor[StarGrabberLeft] = 0;
 		}
 
-				// control both hanging motors with button 7 U and D;
+		// control both hanging motors with button 7 U and D;
 		if (vexRT[Btn7U] == 1)
 		{
 			motor[HangLeft] = HANG_LEFT_UP;
@@ -348,20 +309,19 @@ task usercontrol()
 		}
 		// run autonomous when 8Up is pushed
 
-	/**		if (vexRT[Btn8U] == 1)
+		/**		if (vexRT[Btn8U] == 1)
 		{
-			GSautonomous();
+		GSautonomous();
 		}
 		**/
 		// 8D moves star grabber arm fast
-/**		if (vexRT[Btn8D] == 1)
+		if (vexRT[Btn8D] == 1)
 		{
-			motor[StarGrabber] = 70;
+			motor[StarGrabberRight] = -80;
+			motor[StarGrabberLeft] = 80;
+			wait1Msec(2000);
+			motor[StarGrabberRight] = 0;
+			motor[StarGrabberLeft] = 0;
 		}
-		else
-		{
-			motor[StarGrabber] = 0;
-		}
-		**/
-  }
+	}
 }
