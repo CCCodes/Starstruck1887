@@ -99,31 +99,41 @@ void stopStarGrabber()
 
 void liftStar()
 {
-
-	motor[LiftLeft] = 127;
-	motor[LiftRight] = -127;
-
 	motor[StarGrabberRight] = 40;
 	motor[StarGrabberLeft] = -40;
-	wait1Msec(1100);
-
+		wait1Msec(500);
+			stopStarGrabber();
+	motor[LiftLeft] = 127;
+	motor[LiftRight] = -127;
+	wait1Msec(800);
+	motor[StarGrabberRight] = 40;
+	motor[StarGrabberLeft] = -40;
+	wait1Msec(300);
+			stopStarGrabber();
 	//lifted part of the way
-
-	motor[StarGrabberLeft] = -30;
+	wait1Msec(500);
+	motor[StarGrabberRight] = -40;
+	motor[StarGrabberLeft] = 40;
+	wait1Msec(200);
+				stopStarGrabber();
+/**	motor[StarGrabberLeft] = -30;
 	motor[StarGrabberRight] = 30;
-	wait1Msec(1000);
+	wait1Msec(1500); **/
 	//stopStarGrabber();
 	//flatten star grabber
-		motor[LiftLeft] = 0;
-	motor[LiftRight] = 0;
-	//wait1Msec(200);
+	wait1Msec(200);
+	motor[StarGrabberRight] = -40;
+	motor[StarGrabberLeft] = 40;
+	wait1Msec(200);
+				stopStarGrabber();
+	wait1Msec(300);
 	motor[StarGrabberLeft] = 127;
 	motor[StarGrabberRight] = -127;
-	wait1Msec(400);
-	motor[StarGrabberLeft] = -30;
-	motor[StarGrabberRight] = 30;
-		wait1Msec(100);
-	stopStarGrabber();
+	wait1Msec(200);
+					stopStarGrabber();
+			motor[LiftLeft] = 0;
+	motor[LiftRight] = 0;
+
 }
 
 void putDownLift()
@@ -229,7 +239,7 @@ void GSautonomous()
 
 	liftStar();
 
-	move('F', .4, false);
+
 }
 
 	//if (SensorValue[jump] == 0) // jump is in
