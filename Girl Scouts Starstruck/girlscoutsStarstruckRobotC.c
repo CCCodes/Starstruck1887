@@ -99,23 +99,30 @@ void stopStarGrabber()
 
 void liftStar()
 {
+
 	motor[LiftLeft] = 127;
 	motor[LiftRight] = -127;
-	wait1Msec(1200);
-	motor[LiftLeft] = 0;
-	motor[LiftRight] = 0;
+
+	motor[StarGrabberRight] = 40;
+	motor[StarGrabberLeft] = -40;
+	wait1Msec(1100);
+
 	//lifted part of the way
 
 	motor[StarGrabberLeft] = -30;
 	motor[StarGrabberRight] = 30;
-	wait1Msec(300);
-	stopStarGrabber();
+	wait1Msec(1000);
+	//stopStarGrabber();
 	//flatten star grabber
-
-	wait1Msec(200);
+		motor[LiftLeft] = 0;
+	motor[LiftRight] = 0;
+	//wait1Msec(200);
 	motor[StarGrabberLeft] = 127;
 	motor[StarGrabberRight] = -127;
-	wait1Msec(300);
+	wait1Msec(400);
+	motor[StarGrabberLeft] = -30;
+	motor[StarGrabberRight] = 30;
+		wait1Msec(100);
 	stopStarGrabber();
 }
 
@@ -157,25 +164,76 @@ void smack()
 	motor[StarGrabber] = 0;
 	**/
 }
-
+void GSautonomousOldOne()
+{
+	float timeToMid = 3.5;
+//	motor[StarGrabber] = -70;
+	move('B', 4, true);
+//	motor[StarGrabber] = 0;
+	putDownLift();
+	move('F', .2, false);
+	liftHang();
+	dropHang();
+//	move('F', 2.7, false);
+/**
+	float turnToStraighten = .4;
+	if (SensorValue[jump] == 0) // jump is in
+	{
+		move('L', turnToStraighten, false); // for left side
+	}
+	else
+	{
+		move('R', turnToStraighten, false); // for r ight side
+	}
+	move('B', timeToMid, true);
+	liftHang();
+	dropHang();
+	liftStar();
+	motor[StarGrabber] = 40;
+	move('B', 1, true);
+	wait1Msec(500);
+	motor[StarGrabber] = 0;
+	smack();
+	move('F', 2, false);
+	// has pushed star over
+	// turn right and smack stars on fence
+	if (SensorValue[jump] == 0) // jump is in
+	{
+		move('R', .7, false); // for left side
+	}
+	else
+	{
+		move('L', .7, false); // for right side
+	}
+	move('B', .5, false);
+	smack();
+	move('B', .5, false);
+	smack();
+	move('B', .5, false);
+	smack();
+	//putDownLift();
+	**/
+}
 
 void GSautonomous()
 {
 
-	motor[StarGrabberRight] = -40;
-	motor[StarGrabberLeft] = 40;
-	wait1Msec(1000);
-	stopStarGrabber();
+//	motor[StarGrabberRight] = -40;
+//	motor[StarGrabberLeft] = 40;
+//	wait1Msec(1000);
+//	stopStarGrabber();
 	move('B', 4, true);
 	move('F', .2, false);
-	motor[StarGrabberRight] = 40;
-	motor[StarGrabberLeft] = -40;
-	wait1Msec(600);
-	stopStarGrabber();
+	liftHang();
+	dropHang();
+
 	liftStar();
 
-	//if (SensorValue[jump] == 0) // jump is in
+	move('F', .4, false);
 }
+
+	//if (SensorValue[jump] == 0) // jump is in
+
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*                                                                           */
@@ -215,6 +273,7 @@ void pre_auton()
 task autonomous()
 {
 	GSautonomous();
+
 }
 
 /*---------------------------------------------------------------------------*/
@@ -272,14 +331,14 @@ task usercontrol()
 
 		if (vexRT[Btn6D] == 1) // 6 is open and close of star grabber arm- one arm moves 360 degrees
 		{
-			motor[StarGrabberRight] = -40;
-			motor[StarGrabberLeft] = 40;
+			motor[StarGrabberRight] = 40;
+			motor[StarGrabberLeft] = -40;
 			continue;
 		}
 		else if (vexRT[Btn6U] == 1)
 		{
-			motor[StarGrabberRight] = 40;
-			motor[StarGrabberLeft] = -40;
+			motor[StarGrabberRight] = -40;
+			motor[StarGrabberLeft] = 40;
 			continue;
 		}
 		else
@@ -336,7 +395,8 @@ task usercontrol()
 
 		if (vexRT[Btn8U] == 1)
 		{
-		GSautonomous();
+	//	GSautonomous();
+		liftStar();
 		}
 
 		// 8D moves star grabber arm fast
@@ -344,7 +404,9 @@ task usercontrol()
 		{
 			motor[StarGrabberRight] = -127;
 			motor[StarGrabberLeft] = 127;
-			wait1Msec(2000);
+	  }
+	  else
+	 {
 			motor[StarGrabberRight] = 0;
 			motor[StarGrabberLeft] = 0;
 		}
