@@ -133,6 +133,20 @@ void liftStar()
 					stopStarGrabber();
 			motor[LiftLeft] = 0;
 	motor[LiftRight] = 0;
+//end of toss
+
+	wait1Msec(1000);
+	move('F', .5, false);
+	//motor[StarGrabberLeft] = -40;
+	//motor[StarGrabberRight] = 40;
+	//wait1Msec(600);
+	//stopStarGrabber();
+
+	//motor[LiftLeft] = -100;
+	//motor[LiftRight] = 100;
+	//wait1Msec(1000);
+	//motor[LiftLeft] = 0;
+	//motor[LiftRight] = 0;
 
 }
 
@@ -174,7 +188,7 @@ void smack()
 	motor[StarGrabber] = 0;
 	**/
 }
-void GSautonomousOldOne()
+void GSxutonomousOldOne()
 {
 	float timeToMid = 3.5;
 //	motor[StarGrabber] = -70;
@@ -233,12 +247,24 @@ void GSautonomous()
 //	wait1Msec(1000);
 //	stopStarGrabber();
 	move('B', 4, true);
-	move('F', .2, false);
+	move('F', .3, false);
 	liftHang();
 	dropHang();
+	move('B', .1, false);
 
 	liftStar();
+	putDownLift();
+	move('F', 3, false);
 
+	wait1Msec(1000);
+	motor[StarGrabberRight] = -40;
+	motor[StarGrabberLeft] = 40;
+		wait1Msec(500);
+			stopStarGrabber();
+	move('B', 4, true);
+	move('F', .3, false);
+	liftStar();
+	move('B', .1, false);
 
 }
 
@@ -405,8 +431,8 @@ task usercontrol()
 
 		if (vexRT[Btn8U] == 1)
 		{
-	//	GSautonomous();
-		liftStar();
+			//GSautonomous();
+			liftStar();
 		}
 
 		// 8D moves star grabber arm fast
