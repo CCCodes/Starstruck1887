@@ -273,15 +273,17 @@ void GSautonomous()
 
 }
 void setToScoop(){
+	// only works correctly if elbow and shoulder start bent in
+ // should be fixed
 	//send down until 288 or less
-	while (SensorValue(shoulder) > 400){
+	while (SensorValue(shoulder) > 288){
 		motor[LiftLeft] = -127;
 		motor[LiftRight] = 127;
 	}
 	motor[LiftLeft] = 0;
 	motor[LiftRight] = 0;
 	// send elbow down until 3060 or less
-	while (SensorValue(elbow) > 3099){
+	while (SensorValue(elbow) > 3060){
 		motor[StarGrabberRight] = 40;
 		motor[StarGrabberLeft] = -40;
 	}
@@ -489,7 +491,7 @@ while (true)
 		liftStarPont(2530, 850);
 	}
 
-	// 8D moves star grabber arm fast
+	// 8D moves star grabber arm fast - do we still need this
 	if (vexRT[Btn8D] == 1)
 	{
 		motor[StarGrabberRight] = -127;
@@ -499,6 +501,25 @@ while (true)
 	{
 		motor[StarGrabberRight] = 0;
 		motor[StarGrabberLeft] = 0;
+	}
+	/** coding partner button 6
+	    just add Xmtr2 to the button name **/
+
+  if (vexRT[Btn6DXmtr2] == 1) // 6 down will put the scoop arm on the floor using potentiometer
+	{
+		 setToScoop() ;
+		// only works correctly if elbow and shoulder start bent in
+	 // should be fixed
+	}
+	else if (vexRT[Btn6UXmtr2] == 1) // 6 up will run the non-potentiometer throw program
+		// can tip us if have no star
+		// should start down
+	{
+	//  liftStar();
+	}
+	else
+	{
+	 //nothing
 	}
 }
 }
