@@ -99,29 +99,29 @@ void stopStarGrabber()
 	motor[StarGrabberRight] = 0;
 }
 void liftBar() {
-//	untilPotentiometerGreaterThan(2500, in1);
+	//	untilPotentiometerGreaterThan(2500, in1);
 
 }
 void liftStar()
 {
 	motor[StarGrabberRight] = 40;
 	motor[StarGrabberLeft] = -40;
-		wait1Msec(500);
-			stopStarGrabber();
+	wait1Msec(500);
+	stopStarGrabber();
 	motor[LiftLeft] = 127;
 	motor[LiftRight] = -127;
 	wait1Msec(800);
 	motor[StarGrabberRight] = 40;
 	motor[StarGrabberLeft] = -40;
 	wait1Msec(300);
-			stopStarGrabber();
+	stopStarGrabber();
 	//lifted part of the way
 	wait1Msec(500);
 	motor[StarGrabberRight] = -40;
 	motor[StarGrabberLeft] = 40;
 	wait1Msec(200);
-				stopStarGrabber();
-/**	motor[StarGrabberLeft] = -30;
+	stopStarGrabber();
+	/**	motor[StarGrabberLeft] = -30;
 	motor[StarGrabberRight] = 30;
 	wait1Msec(1500); **/
 	//stopStarGrabber();
@@ -130,15 +130,15 @@ void liftStar()
 	motor[StarGrabberRight] = -40;
 	motor[StarGrabberLeft] = 40;
 	wait1Msec(200);
-				stopStarGrabber();
+	stopStarGrabber();
 	wait1Msec(300);
 	motor[StarGrabberLeft] = 127;
 	motor[StarGrabberRight] = -127;
 	wait1Msec(200);
-					stopStarGrabber();
-			motor[LiftLeft] = 0;
+	stopStarGrabber();
+	motor[LiftLeft] = 0;
 	motor[LiftRight] = 0;
-//end of toss
+	//end of toss
 
 	wait1Msec(1000);
 	move('F', .5, false);
@@ -196,23 +196,23 @@ void smack()
 void GSxutonomousOldOne()
 {
 	float timeToMid = 3.5;
-//	motor[StarGrabber] = -70;
+	//	motor[StarGrabber] = -70;
 	move('B', 4, true);
-//	motor[StarGrabber] = 0;
+	//	motor[StarGrabber] = 0;
 	putDownLift();
 	move('F', .2, false);
 	liftHang();
 	dropHang();
-//	move('F', 2.7, false);
-/**
+	//	move('F', 2.7, false);
+	/**
 	float turnToStraighten = .4;
 	if (SensorValue[jump] == 0) // jump is in
 	{
-		move('L', turnToStraighten, false); // for left side
+	move('L', turnToStraighten, false); // for left side
 	}
 	else
 	{
-		move('R', turnToStraighten, false); // for r ight side
+	move('R', turnToStraighten, false); // for r ight side
 	}
 	move('B', timeToMid, true);
 	liftHang();
@@ -228,11 +228,11 @@ void GSxutonomousOldOne()
 	// turn right and smack stars on fence
 	if (SensorValue[jump] == 0) // jump is in
 	{
-		move('R', .7, false); // for left side
+	move('R', .7, false); // for left side
 	}
 	else
 	{
-		move('L', .7, false); // for right side
+	move('L', .7, false); // for right side
 	}
 	move('B', .5, false);
 	smack();
@@ -247,10 +247,10 @@ void GSxutonomousOldOne()
 void GSautonomous()
 {
 
-//	motor[StarGrabberRight] = -40;
-//	motor[StarGrabberLeft] = 40;
-//	wait1Msec(1000);
-//	stopStarGrabber();
+	//	motor[StarGrabberRight] = -40;
+	//	motor[StarGrabberLeft] = 40;
+	//	wait1Msec(1000);
+	//	stopStarGrabber();
 	move('B', 4, true);
 	move('F', .3, false);
 	liftHang();
@@ -264,16 +264,64 @@ void GSautonomous()
 	wait1Msec(1000);
 	motor[StarGrabberRight] = -40;
 	motor[StarGrabberLeft] = 40;
-		wait1Msec(500);
-			stopStarGrabber();
+	wait1Msec(500);
+	stopStarGrabber();
 	move('B', 4, true);
 	move('F', .3, false);
 	liftStar();
 	move('B', .1, false);
 
 }
+void setToScoop(){
+	//send down until 288 or less
+	while (SensorValue(shoulder) > 400){
+		motor[LiftLeft] = -127;
+		motor[LiftRight] = 127;
+	}
+	motor[LiftLeft] = 0;
+	motor[LiftRight] = 0;
+	// send elbow down until 3060 or less
+	while (SensorValue(elbow) > 3099){
+		motor[StarGrabberRight] = 40;
+		motor[StarGrabberLeft] = -40;
+	}
+	//  untilPotentiometerLessThan(3060, in2);
 
-	//if (SensorValue[jump] == 0) // jump is in
+	motor[StarGrabberRight] = 0;
+	motor[StarGrabberLeft] = 0;
+}
+
+void liftStarPont(int shoulderValue, int elbowValue)
+{
+	motor[LiftLeft] = 127;
+	motor[LiftRight] = -127;
+	wait1Msec(700);
+	motor[StarGrabberRight] = 40;
+	motor[StarGrabberLeft] = -40;
+	bool shoulderStop = false;
+	bool elbowStop = false;
+	while(true)
+	{
+		if (SensorValue(shoulder) > shoulderValue)
+		{
+			motor[LiftLeft] = 0;
+			motor[LiftRight] = 0;
+			shoulderStop = true;
+		}
+		if (SensorValue(elbow) < elbowValue)
+		{
+			stopStarGrabber();
+			elbowStop = true;
+		}
+		if (shoulderStop && elbowStop)
+		{
+			break;
+		}
+	}
+}
+//
+
+//if (SensorValue[jump] == 0) // jump is in
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -287,18 +335,18 @@ void GSautonomous()
 
 void pre_auton()
 {
-	// Set bStopTasksBetweenModes to false if you want to keep user created tasks
-	// running between Autonomous and Driver controlled modes. You will need to
-	// manage all user created tasks if set to false.
-	bStopTasksBetweenModes = true;
+// Set bStopTasksBetweenModes to false if you want to keep user created tasks
+// running between Autonomous and Driver controlled modes. You will need to
+// manage all user created tasks if set to false.
+bStopTasksBetweenModes = true;
 
-	// Set bDisplayCompetitionStatusOnLcd to false if you don't want the LCD
-	// used by the competition include file, for example, you might want
-	// to display your team name on the LCD in this function.
-	// bDisplayCompetitionStatusOnLcd = false;
+// Set bDisplayCompetitionStatusOnLcd to false if you don't want the LCD
+// used by the competition include file, for example, you might want
+// to display your team name on the LCD in this function.
+// bDisplayCompetitionStatusOnLcd = false;
 
-	// All activities that occur before the competition starts
-	// Example: clearing encoders, setting servo positions, ...
+// All activities that occur before the competition starts
+// Example: clearing encoders, setting servo positions, ...
 }
 
 /*---------------------------------------------------------------------------*/
@@ -313,7 +361,7 @@ void pre_auton()
 
 task autonomous()
 {
-	GSautonomous();
+GSautonomous();
 
 }
 
@@ -329,145 +377,128 @@ task autonomous()
 
 task usercontrol()
 {
-	// User control code here, inside the loop
+// User control code here, inside the loop
 int pottest = 1;
 
-	while (true)
+while (true)
+{
+	if (vexRT[Ch3] != 1) // Right jostick circle control moves forward and back
 	{
-		if (vexRT[Ch3] != 1) // Right jostick circle control moves forward and back
-		{
-			motor[LeftFrontWheel] = vexRT[Ch3];
-			motor[LeftBackWheel] = -vexRT[Ch3];
-		}
-		else
-		{
-			motor[LeftFrontWheel] = 0;
-			motor[LeftBackWheel] = 0;
-		}
-
-		if (vexRT[Ch2] != 1) {
-			motor[RightBackWheel] = vexRT[Ch2];
-			motor[RightFrontWheel] = -vexRT[Ch2];
-		}
-		else
-		{
-			motor[RightFrontWheel] = 0;
-			motor[RightBackWheel] = 0;
-		}
-
-		if (vexRT[Btn5D] == 1) // 5 Lift 2 arms up and down
-		{
-			motor[LiftLeft] = -127;
-			motor[LiftRight] = 127;
-		}
-		else if (vexRT[Btn5U] == 1)
-		{
-			motor[LiftLeft] = 127;
-			motor[LiftRight] = -127;
-		}
-		else
-		{
-			motor[LiftLeft] = 0;
-			motor[LiftRight] = 0;
-		}
-
-		if (vexRT[Btn6D] == 1) // 6 is up and down of elbow
-		{
-			motor[StarGrabberRight] = 40;
-			motor[StarGrabberLeft] = -40;
-			continue;
-		}
-		else if (vexRT[Btn6U] == 1)
-		{
-			motor[StarGrabberRight] = -40;
-			motor[StarGrabberLeft] = 40;
-			continue;
-		}
-		else
-		{
-			motor[StarGrabberRight] = 0;
-			motor[StarGrabberLeft] = 0;
-		}
-
-		// control both hanging motors with button 7 U and D;
-		if (vexRT[Btn7U] == 1)
-		{
-			motor[HangLeft] = HANG_LEFT_UP;
-			motor[HangRight] = HANG_RIGHT_UP;
-			continue; // so it doesn't hit the else statements that set the motors to 0
-		}
-		else if (vexRT[Btn7D] == 1)
-		{
-			motor[HangLeft] = HANG_LEFT_DOWN;
-			motor[HangRight] = HANG_RIGHT_DOWN;
-			continue; // so it doesn't hit the else statements that set the motors to 0
-		}
-		else
-		{
-			motor[HangLeft] = 0;
-			motor[HangRight] = 0;
-		}
-
-		if (vexRT[Btn7L] == 1) // handles left arm alone using left and right 7
-		{
-			motor[HangLeft] = HANG_LEFT_UP;
-		}
-		else if (vexRT[Btn7R] == 1)
-		{
-			motor[HangLeft] = HANG_LEFT_DOWN;
-		}
-		else
-		{
-			motor[HangLeft] = 0;
-		}
-
-		if (vexRT[Btn8L] == 1) // handles right arm alone using lefgt and right 8
-		{
-			motor[HangRight] = HANG_RIGHT_UP;
-		}
-		else if (vexRT[Btn8R] == 1)
-		{
-			motor[HangRight] = HANG_RIGHT_DOWN;
-		}
-		else
-		{
-			motor[HangRight] = 0;
-		}
-		// run autonomous when 8Up is pushed
-
-		if (vexRT[Btn8U] == 1)
-		{
-			//GSautonomous();
-			//liftStar();
-		  // pottest = SensorValue(lift2);
-		//send down until 288 or less
-		while (SensorValue(shoulder) > 400){
-					motor[LiftLeft] = -127;
-			    motor[LiftRight] = 127;
-			  }
-			    motor[LiftLeft] = 0;
-			    motor[LiftRight] = 0;
-			  // send elbow down until 3060 or less
-			while (SensorValue(elbow) > 3099){
-			   motor[StarGrabberRight] = 40;
-			     motor[StarGrabberLeft] = -40;
-			    }
-			       //  untilPotentiometerLessThan(3060, in2);
-
-			         motor[StarGrabberRight] = 0;
-			     motor[StarGrabberLeft] = 0;
-		}
-
-		// 8D moves star grabber arm fast
-		if (vexRT[Btn8D] == 1)
-		{
-			motor[StarGrabberRight] = -127;
-			motor[StarGrabberLeft] = 127;
-	  }
-	  else
-	 {
-			motor[StarGrabberRight] = 0;
-			motor[StarGrabberLeft] = 0;
-		}
+		motor[LeftFrontWheel] = vexRT[Ch3];
+		motor[LeftBackWheel] = -vexRT[Ch3];
 	}
+	else
+	{
+		motor[LeftFrontWheel] = 0;
+		motor[LeftBackWheel] = 0;
+	}
+
+	if (vexRT[Ch2] != 1) {
+		motor[RightBackWheel] = vexRT[Ch2];
+		motor[RightFrontWheel] = -vexRT[Ch2];
+	}
+	else
+	{
+		motor[RightFrontWheel] = 0;
+		motor[RightBackWheel] = 0;
+	}
+
+	if (vexRT[Btn5D] == 1) // 5 Lift 2 arms up and down
+	{
+		motor[LiftLeft] = -127;
+		motor[LiftRight] = 127;
+	}
+	else if (vexRT[Btn5U] == 1)
+	{
+		motor[LiftLeft] = 127;
+		motor[LiftRight] = -127;
+	}
+	else
+	{
+		motor[LiftLeft] = 0;
+		motor[LiftRight] = 0;
+	}
+
+	if (vexRT[Btn6D] == 1) // 6 is up and down of elbow
+	{
+		motor[StarGrabberRight] = 40;
+		motor[StarGrabberLeft] = -40;
+		continue;
+	}
+	else if (vexRT[Btn6U] == 1)
+	{
+		motor[StarGrabberRight] = -40;
+		motor[StarGrabberLeft] = 40;
+		continue;
+	}
+	else
+	{
+		motor[StarGrabberRight] = 0;
+		motor[StarGrabberLeft] = 0;
+	}
+
+	// control both hanging motors with button 7 U and D;
+	if (vexRT[Btn7U] == 1)
+	{
+		motor[HangLeft] = HANG_LEFT_UP;
+		motor[HangRight] = HANG_RIGHT_UP;
+		continue; // so it doesn't hit the else statements that set the motors to 0
+	}
+	else if (vexRT[Btn7D] == 1)
+	{
+		motor[HangLeft] = HANG_LEFT_DOWN;
+		motor[HangRight] = HANG_RIGHT_DOWN;
+		continue; // so it doesn't hit the else statements that set the motors to 0
+	}
+	else
+	{
+		motor[HangLeft] = 0;
+		motor[HangRight] = 0;
+	}
+
+	if (vexRT[Btn7L] == 1) // handles left arm alone using left and right 7
+	{
+		motor[HangLeft] = HANG_LEFT_UP;
+	}
+	else if (vexRT[Btn7R] == 1)
+	{
+		motor[HangLeft] = HANG_LEFT_DOWN;
+	}
+	else
+	{
+		motor[HangLeft] = 0;
+	}
+
+	if (vexRT[Btn8L] == 1) // handles right arm alone using lefgt and right 8
+	{
+		motor[HangRight] = HANG_RIGHT_UP;
+	}
+	else if (vexRT[Btn8R] == 1)
+	{
+		motor[HangRight] = HANG_RIGHT_DOWN;
+	}
+	else
+	{
+		motor[HangRight] = 0;
+	}
+	// run autonomous when 8Up is pushed
+
+	if (vexRT[Btn8U] == 1)
+	{
+		//GSautonomous();
+		liftStarPont(2530, 850);
+	}
+
+	// 8D moves star grabber arm fast
+	if (vexRT[Btn8D] == 1)
+	{
+		motor[StarGrabberRight] = -127;
+		motor[StarGrabberLeft] = 127;
+	}
+	else
+	{
+		motor[StarGrabberRight] = 0;
+		motor[StarGrabberLeft] = 0;
+	}
+}
 }
