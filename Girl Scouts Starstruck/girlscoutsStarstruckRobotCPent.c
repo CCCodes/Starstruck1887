@@ -105,28 +105,39 @@ void liftBar() {
 // currently called  with (2530, 850);
 void liftStarPont(int shoulderValue, int elbowValue)
 {
+
 	motor[LiftLeft] = 127;
 	motor[LiftRight] = -127;
-	wait1Msec(1400); // time between lift starting and grabber angle changing (change angle time)
-	motor[StarGrabberRight] = 40;
-	motor[StarGrabberLeft] = -40;
+	//wait1Msec(1400); // time between lift starting and grabber angle changing (change angle time)
+
+
 	bool shoulderStop = false;
-	bool elbowStop = false;
+	int elbowStartFoldBackShoulderValue = 400; // start backing up elbow at 20 degrees of shoulder
+	bool elbowStop = false; // stop folding back elbow at 170 degrees of shoulder
 	// first round to get to parallel to ground
 	clearTimer(T1);
-	while(true   &&  time1[T1] < 3000)// and timer value less than max
+	while(true   &&  time1[T1] < 7000)// and timer value less than max
 	{
+
 		if (SensorValue(shoulder) > 2557) // currently called with 2530--was 2707
 		{
 			motor[LiftLeft] = 0;
 			motor[LiftRight] = 0;
 			shoulderStop = true;
 		}
-		if (SensorValue(elbow) < 123)  // currently 850
+		if (SensorValue(elbow) < 2583 && SensorValue(shoulder) > 400 )  // currently 850
 		{
-			stopStarGrabber();
-			elbowStop = true;
-		}
+				motor[StarGrabberRight] = 20; // move when shoulder  is at least 20 degrees and elbow not fully back
+	      motor[StarGrabberLeft] = -20;
+	    }
+	      else
+	   {
+			stopStarGrabber(); // don't move if not supposed to
+			 if (SensorValue(elbow) > 2583)// once you reach the full elbow, stop
+		   {
+			    elbowStop = true;
+		   }
+	   }
 		if (shoulderStop && elbowStop)
 		{
 			break;
@@ -140,7 +151,7 @@ void liftStarPont(int shoulderValue, int elbowValue)
 	clearTimer(T2);
 	while(true  &&  time1[T2] < 800)
 	{
-		if (SensorValue(elbow) > 2130 ) // was 1800
+		if (SensorValue(elbow) > 1080 ) // was 1800
 		{
 			stopStarGrabber();
 			break;
