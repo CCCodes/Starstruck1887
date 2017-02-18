@@ -102,24 +102,70 @@ void liftBar() {
 	//	untilPotentiometerGreaterThan(2500, in1);
 
 }
+// currently called  with (2530, 850);
+void liftStarPont(int shoulderValue, int elbowValue)
+{
+	motor[LiftLeft] = 127;
+	motor[LiftRight] = -127;
+	wait1Msec(1400); // time between lift starting and grabber angle changing (change angle time)
+	motor[StarGrabberRight] = 40;
+	motor[StarGrabberLeft] = -40;
+	bool shoulderStop = false;
+	bool elbowStop = false;
+	// first round to get to parallel to ground
+	clearTimer(T1);
+	while(true   &&  time1[T1] < 3000)// and timer value less than max
+	{
+		if (SensorValue(shoulder) > 2557) // currently called with 2530--was 2707
+		{
+			motor[LiftLeft] = 0;
+			motor[LiftRight] = 0;
+			shoulderStop = true;
+		}
+		if (SensorValue(elbow) < 123)  // currently 850
+		{
+			stopStarGrabber();
+			elbowStop = true;
+		}
+		if (shoulderStop && elbowStop)
+		{
+			break;
+		}
+	}
+
+// last elbow throw
+
+	motor[StarGrabberLeft] = 100;
+	motor[StarGrabberRight] = -100;
+	clearTimer(T2);
+	while(true  &&  time1[T2] < 800)
+	{
+		if (SensorValue(elbow) > 2130 ) // was 1800
+		{
+			stopStarGrabber();
+			break;
+		}
+	}
+}
+
 void liftStar()
 {
 	motor[StarGrabberRight] = 40;
 	motor[StarGrabberLeft] = -40;
-	wait1Msec(500);
+	wait1Msec(800);
 	stopStarGrabber();
 	motor[LiftLeft] = 127;
 	motor[LiftRight] = -127;
-	wait1Msec(800);
+	wait1Msec(400);  // was 500
 	motor[StarGrabberRight] = 40;
 	motor[StarGrabberLeft] = -40;
-	wait1Msec(300);
+	wait1Msec(250); // was 300
 	stopStarGrabber();
 	//lifted part of the way
-	wait1Msec(500);
+	wait1Msec(400); //was 500
 	motor[StarGrabberRight] = -40;
 	motor[StarGrabberLeft] = 40;
-	wait1Msec(200);
+	wait1Msec(150); // was 200
 	stopStarGrabber();
 	/**	motor[StarGrabberLeft] = -30;
 	motor[StarGrabberRight] = 30;
@@ -243,6 +289,24 @@ void GSxutonomousOldOne()
 	//putDownLift();
 	**/
 }
+void GSautonomousJustPush()
+{
+
+	//	motor[StarGrabberRight] = -40;
+	//	motor[StarGrabberLeft] = 40;
+	//	wait1Msec(1000);
+	//	stopStarGrabber();
+	move('B', 4, true);
+	move('L', .01, true);
+	int count;
+	for(count= 1;count <= 4; count = count+1){
+	   move('F', .3, false);
+	   move('B', .3, false);
+
+//  GSautonomousPart2();
+   }
+
+}
 
 void GSautonomous()
 {
@@ -256,7 +320,10 @@ void GSautonomous()
 	liftHang();
 	dropHang();
 	move('B', .1, false);
-
+//  GSautonomousPart2();
+}
+	void GSautonomousPart2(){
+	//liftStarPont(2530, 850);
 	liftStar();
 	putDownLift();
 	move('F', 3, false);
@@ -270,20 +337,21 @@ void GSautonomous()
 	move('F', .3, false);
 	liftStar();
 	move('B', .1, false);
-
 }
 void setToScoop(){
 	// only works correctly if elbow and shoulder start bent in
  // should be fixed
 	//send down until 288 or less
-	while (SensorValue(shoulder) > 288){
+clearTimer(T1);
+	while (SensorValue(shoulder) > 248 &&  time1[T1] < 3000){
 		motor[LiftLeft] = -127;
 		motor[LiftRight] = 127;
 	}
 	motor[LiftLeft] = 0;
 	motor[LiftRight] = 0;
-	// send elbow down until 3060 or less
-	while (SensorValue(elbow) > 3060){
+	// send elbow down until 2350 or less
+	clearTimer(T1);
+	while (SensorValue(elbow) > 2538    &&  time1[T1] < 3000){
 		motor[StarGrabberRight] = 40;
 		motor[StarGrabberLeft] = -40;
 	}
@@ -293,48 +361,6 @@ void setToScoop(){
 	motor[StarGrabberLeft] = 0;
 }
 
-void liftStarPont(int shoulderValue, int elbowValue)
-{
-	motor[LiftLeft] = 127;
-	motor[LiftRight] = -127;
-	wait1Msec(700);
-	motor[StarGrabberRight] = 40;
-	motor[StarGrabberLeft] = -40;
-	bool shoulderStop = false;
-	bool elbowStop = false;
-	while(true)
-	{
-		if (SensorValue(shoulder) > shoulderValue)
-		{
-			motor[LiftLeft] = 0;
-			motor[LiftRight] = 0;
-			shoulderStop = true;
-		}
-		if (SensorValue(elbow) < elbowValue)
-		{
-			stopStarGrabber();
-			elbowStop = true;
-		}
-		if (shoulderStop && elbowStop)
-		{
-			break;
-		}
-	}
-}
-//
-
-//if (SensorValue[jump] == 0) // jump is in
-
-/*---------------------------------------------------------------------------*/
-/*                          Pre-Autonomous Functions                         */
-/*                                                                           */
-/*  You may want to perform some actions before the competition starts.      */
-/*  Do them in the following function.  You must return from this function   */
-/*  or the autonomous and usercontrol tasks will not be started.  This       */
-/*  function is only called once after the cortex has been powered on and    */
-/*  not every time that the robot is disabled.                               */
-/*---------------------------------------------------------------------------*/
-
 void pre_auton()
 {
 // Set bStopTasksBetweenModes to false if you want to keep user created tasks
@@ -342,40 +368,19 @@ void pre_auton()
 // manage all user created tasks if set to false.
 bStopTasksBetweenModes = true;
 
-// Set bDisplayCompetitionStatusOnLcd to false if you don't want the LCD
-// used by the competition include file, for example, you might want
-// to display your team name on the LCD in this function.
-// bDisplayCompetitionStatusOnLcd = false;
-
-// All activities that occur before the competition starts
-// Example: clearing encoders, setting servo positions, ...
 }
-
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              Autonomous Task                              */
-/*                                                                           */
-/*  This task is used to control your robot during the autonomous phase of   */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
 
 task autonomous()
 {
-GSautonomous();
+
+	if (SensorValue[jump] == 0) // jump is in
+	{
+	//	wait1Msec(5000);
+	//	move('F', 4, true);
+	}
+	GSautonomous();
 
 }
-
-/*---------------------------------------------------------------------------*/
-/*                                                                           */
-/*                              User Control Task                            */
-/*                                                                           */
-/*  This task is used to control your robot during the user control phase of */
-/*  a VEX Competition.                                                       */
-/*                                                                           */
-/*  You must modify the code to add your own robot specific commands here.   */
-/*---------------------------------------------------------------------------*/
 
 task usercontrol()
 {
@@ -488,38 +493,58 @@ while (true)
 	if (vexRT[Btn8U] == 1)
 	{
 		//GSautonomous();
-		liftStarPont(2530, 850);
+		//liftStarPont(2530, 850);
+		liftStar();
 	}
-
-	// 8D moves star grabber arm fast - do we still need this
-	if (vexRT[Btn8D] == 1)
-	{
-		motor[StarGrabberRight] = -127;
-		motor[StarGrabberLeft] = 127;
-	}
-	else
-	{
-		motor[StarGrabberRight] = 0;
-		motor[StarGrabberLeft] = 0;
-	}
-	/** coding partner button 6
-	    just add Xmtr2 to the button name **/
-
-  if (vexRT[Btn6DXmtr2] == 1) // 6 down will put the scoop arm on the floor using potentiometer
+  if (vexRT[Btn8D] == 1) // 6 down will put the scoop arm on the floor using potentiometer
 	{
 		 setToScoop() ;
 		// only works correctly if elbow and shoulder start bent in
 	 // should be fixed
 	}
-	else if (vexRT[Btn6UXmtr2] == 1) // 6 up will run the non-potentiometer throw program
-		// can tip us if have no star
-		// should start down
-	{
-	//  liftStar();
-	}
-	else
-	{
-	 //nothing
-	}
+
+	/** coding partner button 6
+	    just add Xmtr2 to the button name **/
+	if (vexRT[Btn6DXmtr2] == 1) // 6 down will run autonomous
+  {
+         	GSautonomous() ;
+         	continue;
+        // only works correctly if elbow and shoulder start bent in
+     // should be fixed
+  }
+   /**
+  if (vexRT[Btn6UXmtr2] == 1) // 6 up will run lift star and then end of autonomous
+  {
+  	  GSautonomousPart2()
+        // only works correctly if elbow and shoulder start bent in
+     // should be fixed
+  }
+**/
+if (vexRT[Btn7DXmtr2] == 1) // 7 down will run lift star pont
+  {
+         liftStarPont(2530, 850);
+        // only works correctly if elbow and shoulder start bent in
+     // should be fixed
+         continue;
+  }
+
+  if (vexRT[Btn7UXmtr2] == 1) // 7 up will run lift star
+  {
+         liftStar();
+        // only works correctly if elbow and shoulder start bent in
+     // should be fixed
+         continue;
+  }
+ if (vexRT[Btn5UXmtr2] == 1) // 5 up will run autonomous push
+  {
+         GSautonomousJustPush();
+        // only works correctly if elbow and shoulder start bent in
+     // should be fixed
+         continue;
+  }
+
+
+
+
 }
 }
