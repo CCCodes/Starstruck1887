@@ -125,7 +125,7 @@ void liftStarPont(int shoulderValue, int elbowValue)
 			motor[LiftRight] = 0;
 			shoulderStop = true;
 		}
-		if (SensorValue(elbow) < 2583 && SensorValue(shoulder) > 400 )  // currently 850
+		if (SensorValue(elbow) > 668 && SensorValue(shoulder) > elbowStartFoldBackShoulderValue )  // currently 850
 		{
 				motor[StarGrabberRight] = 20; // move when shoulder  is at least 20 degrees and elbow not fully back
 	      motor[StarGrabberLeft] = -20;
@@ -133,7 +133,7 @@ void liftStarPont(int shoulderValue, int elbowValue)
 	      else
 	   {
 			stopStarGrabber(); // don't move if not supposed to
-			 if (SensorValue(elbow) > 2583)// once you reach the full elbow, stop
+			 if (SensorValue(elbow) < 668)// once you reach the full elbow, stop
 		   {
 			    elbowStop = true;
 		   }
@@ -151,7 +151,7 @@ void liftStarPont(int shoulderValue, int elbowValue)
 	clearTimer(T2);
 	while(true  &&  time1[T2] < 800)
 	{
-		if (SensorValue(elbow) > 1080 ) // was 1800
+		if (SensorValue(elbow) > 2312 ) // was 1800
 		{
 			stopStarGrabber();
 			break;
