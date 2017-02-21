@@ -46,8 +46,8 @@
    int shoulderUprightValue = 2000; // last value upright 2657
    int elbowFoldBackStop = 1204; // elbow folded back far enough
    // throw stops
-   int elbowThrowStop = 1100; // elbow value to stop throwing
-   int shoulderThrowStop = 2500 ; //  but momentum pushes it past this
+   int elbowThrowStop = 1200; // elbow value to stop throwing
+   int shoulderThrowStop = 2400 ; //  but momentum pushes it past this
    // drop stops
    int shoulderDropStop = 2657;
    int elbowDropStop = 2300;
@@ -168,17 +168,25 @@ void moveElbow (char dir, int speed){
   clearTimer(T1); // use a timer because it has to stop if problems occur and give control back to remote
                     // if this timer ever hits the max pont time,
 
-  // if the shoulder starts very low, get a starting position set by first moving elbow)
+  // if the shoulder starts very low, get a starting position set by first moving elbow to correct start)
   writeDebugStreamLine("At shoulder low test The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
   if (SensorValue(shoulder) < shoulderValueForElbowToFoldUp)  {
-   writeDebugStreamLine("doing low elbow up");
-  	   if (SensorValue(elbow) < elbowFirstFoldUpValue){
+   writeDebugStreamLine("doing low elbow reset");
+  	   if (SensorValue(elbow) < elbowFirstFoldUpValue){ // elbow folded back too far
   	      moveElbow('U',40)	;
   	      writeDebugStreamLine("started elbow up");
   	      while (SensorValue(elbow) < elbowFirstFoldUpValue && time1[T1] < maxFunctionTime ) {} // wait until the elbow moves up
   	      writeDebugStreamLine("stopped the elbow");
   			  stopElbow();
   	    }
+  	    else // elbow needs to drop down
+  	    {
+  	  		moveElbow('D',30)	;
+  	      writeDebugStreamLine("started elbow down");
+  	      while (SensorValue(elbow) > elbowFirstFoldUpValue && time1[T1] < maxFunctionTime ) {} // wait until the elbow moves up
+  	      writeDebugStreamLine("stopped the elbow");
+  			  stopElbow();
+  	   }
   }
   writeDebugStreamLine("After shoulder low test  and before parallel, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
 
@@ -366,7 +374,7 @@ void liftHang()
 {
 	motor[HangLeft] = HANG_LEFT_UP;
 	motor[HangRight] = HANG_RIGHT_UP;
-	wait1Msec(4500);
+	wait1Msec(4800); // was 4500
 	motor[HangLeft] = 0;
 	motor[HangRight] = 0;
 }
@@ -375,7 +383,7 @@ void dropHang()
 {
 	motor[HangLeft] = HANG_LEFT_DOWN;
 	motor[HangRight] = HANG_RIGHT_DOWN;
-	wait1Msec(4000);
+	wait1Msec(3750); // was 4000
 	motor[HangLeft] = 0;
 	motor[HangRight] = 0;
 }
@@ -399,22 +407,22 @@ void setToScoop(){
 	// send elbow down until 2350 or less
 	clearTimer(T2);
   // bring elbow up far enough
-	if (SensorValue(elbow) < 2283) {
+	if (SensorValue(elbow) < 2400) {
 		moveElbow('U',40);
-	  while (SensorValue(elbow) < 2283    &&  time1[T2] < 3000){}
+	  while (SensorValue(elbow) < 2400    &&  time1[T2] < 1500){}
 		stopElbow();
   }
 	//put shoulder to bottom if not already
   clearTimer(T2);
-  if (SensorValue(shoulder) > 200) {
+  if (SensorValue(shoulder) > 184) {
 	  moveShoulder('D',80);
-		while (SensorValue(shoulder) > 200 &&  time1[T2] < 3000){} // go down until 248 but stop at 3 sec
+		while (SensorValue(shoulder) > 184 &&  time1[T2] < 1500){} // go down until 248 but stop at 3 sec
 	  stopShoulder();
 	}
 		// push elbow down far enough
-	if (SensorValue(elbow) > 2283) {
+	if (SensorValue(elbow) > 2400) {
 		moveElbow('D',40);
-	  while (SensorValue(elbow) > 2283    &&  time1[T2] < 3000){}
+	  while (SensorValue(elbow) > 2400    &&  time1[T2] < 1500){}
 		stopElbow();
   }
 }
@@ -491,18 +499,24 @@ void GSautonomous()
 	liftHang();
 	dropHang();
 	move('B', .1, false);
-	putDownLift();
+
+	liftStarPont2();
+	liftStarPontDropAfter(); // in case the throw did not work
+  setToScoop();
 	// usually don't get further than this in autonomous
 	move('F', 3, false);
+  moveElbow ('U', 40);
+  wait1Msec(500);
+  stopElbow();
 	move('B', 4, true);
-	move('F', .3, false);
+//	move('F', .3, false);
 /**	wait1Msec(100);
 	motor[StarGrabberRight] = -40;
 	motor[StarGrabberLeft] = 40;
 	wait1Msec(500);
 	stopStarGrabber();
 	**/
-	setToScoop();
+
 	liftStarPont2();
 	liftStarPontDropAfter(); // in case the throw did not work
 	move('B', .1, false);
