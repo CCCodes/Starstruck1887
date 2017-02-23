@@ -383,7 +383,7 @@ void dropHang()
 {
 	motor[HangLeft] = HANG_LEFT_DOWN;
 	motor[HangRight] = HANG_RIGHT_DOWN;
-	wait1Msec(3750); // was 4000
+	wait1Msec(4200); // was 4000
 	motor[HangLeft] = 0;
 	motor[HangRight] = 0;
 }
@@ -505,8 +505,8 @@ void GSautonomous()
   setToScoop();
 	// usually don't get further than this in autonomous
 	move('F', 3, false);
-  moveElbow ('U', 40);
-  wait1Msec(500);
+  moveElbow ('U', 50);
+  wait1Msec(800);
   stopElbow();
 	move('B', 4, true);
 //	move('F', .3, false);
