@@ -38,13 +38,14 @@
 // values for controlling throw
    // first fold up
    int shoulderValueForElbowToFoldUp = 500; // start backing up elbow at 20 degrees of shoulder
-   int elbowFirstFoldUpValue = 3042; // how far up the elbow goes in the beginning
+   int elbowFirstFoldUpValue = 3042; // how far up the elbow goes in the beginning--was 3042
+   int elbowFirstFoldDownValue = 3500; // how far up the elbow goes in the beginning--was 3042
    // move to parallel
    int shoulderParallel = 1000; //
    int elbowGoalWhenParallel = 2000; // where we want the elbow when the shoulder is parallel
    // move to ready to throw
    int shoulderUprightValue = 2000; // last value upright 2657
-   int elbowFoldBackStop = 1204; // elbow folded back far enough
+   int elbowFoldBackStop = 1204; // elbow folded back far enough- was 1400-was 1600
    // throw stops
    int elbowThrowStop = 1200; // elbow value to stop throwing
    int shoulderThrowStop = 2400 ; //  but momentum pushes it past this
@@ -157,7 +158,7 @@ void moveElbow (char dir, int speed){
 {
 	//Clears Debug Stream before use
 	clearDebugStream();
-  maxFunctionTime = 6000;
+  maxFunctionTime = 5500;//was 6000
   shoulderMoving = false;
   elbowMoving = false;
   if (SensorValue(shoulder) > shoulderUprightValue
@@ -173,17 +174,18 @@ void moveElbow (char dir, int speed){
   if (SensorValue(shoulder) < shoulderValueForElbowToFoldUp)  {
    writeDebugStreamLine("doing low elbow reset");
   	   if (SensorValue(elbow) < elbowFirstFoldUpValue){ // elbow folded back too far
-  	      moveElbow('U',40)	;
+  	      moveElbow('U',40)	; //was 40
   	      writeDebugStreamLine("started elbow up");
   	      while (SensorValue(elbow) < elbowFirstFoldUpValue && time1[T1] < maxFunctionTime ) {} // wait until the elbow moves up
   	      writeDebugStreamLine("stopped the elbow");
   			  stopElbow();
   	    }
-  	    else // elbow needs to drop down
+  	    // elbow needs to drop down
+  	    if (SensorValue(elbow) >  elbowFirstFoldDownValue) // elbow folded back too far- just commented out 2.23
   	    {
-  	  		moveElbow('D',30)	;
+  	  		moveElbow('D',20)	; //was 40
   	      writeDebugStreamLine("started elbow down");
-  	      while (SensorValue(elbow) > elbowFirstFoldUpValue && time1[T1] < maxFunctionTime ) {} // wait until the elbow moves up
+  	      while (SensorValue(elbow) > elbowFirstFoldDownValue && time1[T1] < maxFunctionTime ) {} // wait until the elbow moves up
   	      writeDebugStreamLine("stopped the elbow");
   			  stopElbow();
   	   }
@@ -238,7 +240,7 @@ if (SensorValue(shoulder) < shoulderUprightValue )  { // should not be necessary
 		     }
 		     if (SensorValue(elbow) < elbowFoldBackStop  && elbowMoving ) {
 		       // stopElbow();
-		        moveElbow('U',5); // opposite direction a bit
+		        moveElbow('U',15); // opposite direction a bit
 		        elbowMoving = false;
 		        writeDebugStreamLine("just stopped the elbow during last shoulder up");
 		     }
@@ -416,13 +418,13 @@ void setToScoop(){
   clearTimer(T2);
   if (SensorValue(shoulder) > 184) {
 	  moveShoulder('D',80);
-		while (SensorValue(shoulder) > 184 &&  time1[T2] < 1500){} // go down until 248 but stop at 3 sec
+		while (SensorValue(shoulder) > 184 &&  time1[T2] < 2000){} // go down until 248 but stop at 3 sec
 	  stopShoulder();
 	}
 		// push elbow down far enough
 	if (SensorValue(elbow) > 2400) {
 		moveElbow('D',40);
-	  while (SensorValue(elbow) > 2400    &&  time1[T2] < 1500){}
+	  while (SensorValue(elbow) > 2400    &&  time1[T2] < 2000){}
 		stopElbow();
   }
 }
