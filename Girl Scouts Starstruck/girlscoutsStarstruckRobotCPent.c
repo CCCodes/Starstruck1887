@@ -44,11 +44,11 @@
    int shoulderParallel = 1000; //
    int elbowGoalWhenParallel = 2000; // where we want the elbow when the shoulder is parallel
    // move to ready to throw
-   int shoulderUprightValue = 2000; // last value upright 2657
+   int shoulderUprightValue = 2000; // last value upright 2657 was 2000
    int elbowFoldBackStop = 1204; // elbow folded back far enough- was 1400-was 1600
    // throw stops
-   int elbowThrowStop = 1200; // elbow value to stop throwing
-   int shoulderThrowStop = 2400 ; //  but momentum pushes it past this
+   int elbowThrowStop = 1400; // elbow value to stop throwing 1200
+   int shoulderThrowStop = 2500 ; //  but momentum pushes it past this 2400 was 2500
    // drop stops
    int shoulderDropStop = 2657;
    int elbowDropStop = 2300;
@@ -211,7 +211,7 @@ if (SensorValue(shoulder) < shoulderParallel)  {
 		     }
 		     if (SensorValue(elbow) < elbowGoalWhenParallel && elbowMoving) {
 		      //  stopElbow();
-		        moveElbow('U',5); // opposite direction a bit
+		        moveElbow('U',10); // opposite direction a bit
 		        elbowMoving = false;
 		         writeDebugStreamLine("just stopped the elbow during shoulder parallel");
 			     	 writeDebugStreamLine(" The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
@@ -258,7 +258,7 @@ if (SensorValue(shoulder) < shoulderThrowStop )  { // should not be necessary bu
 	  while(( shoulderMoving || elbowMoving) && time1[T1] < maxFunctionTime ){ // and timer value less than max
 			   if (SensorValue(shoulder) >  shoulderThrowStop && shoulderMoving ) {
 			      stopShoulder();
-			     	moveShoulder('D',50); // start moving other direction a little
+			     //	moveShoulder('D',50); // start moving other direction a little
 			     	shoulderMoving = false;
 			     	 writeDebugStreamLine("just stopped the shoulder during throw");
 		     }
@@ -376,20 +376,34 @@ void liftHang()
 {
 	motor[HangLeft] = HANG_LEFT_UP;
 	motor[HangRight] = HANG_RIGHT_UP;
-	wait1Msec(4800); // was 4500
+	wait1Msec(4300); // was 4800
 	motor[HangLeft] = 0;
 	motor[HangRight] = 0;
 }
-
-void dropHang()
+void startLiftHang()
+{
+	motor[HangLeft] = HANG_LEFT_UP;
+	motor[HangRight] = HANG_RIGHT_UP;
+}
+void stopHang()
+{
+	motor[HangLeft] = 0;
+	motor[HangRight] = 0;
+}
+void dropHang( float time )
 {
 	motor[HangLeft] = HANG_LEFT_DOWN;
 	motor[HangRight] = HANG_RIGHT_DOWN;
-	wait1Msec(4200); // was 4000
+	wait1Msec(time * 1000); // was 4000 - was 4300
 	motor[HangLeft] = 0;
 	motor[HangRight] = 0;
 }
 
+void StartDropHang ()
+{
+	motor[HangLeft] = HANG_LEFT_DOWN;
+	motor[HangRight] = HANG_RIGHT_DOWN;
+}
 
 void smack()
 {
@@ -411,7 +425,7 @@ void setToScoop(){
   // bring elbow up far enough
 	if (SensorValue(elbow) < 2400) {
 		moveElbow('U',40);
-	  while (SensorValue(elbow) < 2400    &&  time1[T2] < 1500){}
+	  while (SensorValue(elbow) < 2202    &&  time1[T2] < 1500){}//3152 was 2400
 		stopElbow();
   }
 	//put shoulder to bottom if not already
@@ -429,59 +443,13 @@ void setToScoop(){
   }
 }
 
-void GSxutonomousOldOne()
-{
-	float timeToMid = 3.5;
-	//	motor[StarGrabber] = -70;
-	move('B', 4, true);
-	//	motor[StarGrabber] = 0;
-	putDownLift();
-	move('F', .2, false);
-	liftHang();
-	dropHang();
-	//	move('F', 2.7, false);
-	/**
-	float turnToStraighten = .4;
-	if (SensorValue[jump] == 0) // jump is in
-	{
-	move('L', turnToStraighten, false); // for left side
-	}
-	else
-	{
-	move('R', turnToStraighten, false); // for r ight side
-	}
-	move('B', timeToMid, true);
-	liftHang();
-	dropHang();
-	liftStar();
-	motor[StarGrabber] = 40;
-	move('B', 1, true);
-	wait1Msec(500);
-	motor[StarGrabber] = 0;
-	smack();
-	move('F', 2, false);
-	// has pushed star over
-	// turn right and smack stars on fence
-	if (SensorValue[jump] == 0) // jump is in
-	{
-	move('R', .7, false); // for left side
-	}
-	else
-	{
-	move('L', .7, false); // for right side
-	}
-	move('B', .5, false);
-	smack();
-	move('B', .5, false);
-	smack();
-	move('B', .5, false);
-	smack();
-	//putDownLift();
-	**/
-}
+
 void GSautonomousJustPush()
 {
-	move('B', 4, true);
+
+wait1Msec(5000);
+
+  move('B', 4, true);
 	move('L', .01, true);
 	int count;
 	for(count= 1;count <= 4; count = count+1){
@@ -496,32 +464,41 @@ void GSautonomous()
 	//	motor[StarGrabberLeft] = 40;
 	//	wait1Msec(1000);
 	//	stopStarGrabber();
-	move('B', 4, true);
+  startLiftHang();
+	move('B', .5, true);
+	stopHang();
+		move('B', 3.5, true);
 	move('F', .3, false);
-	liftHang();
-	dropHang();
-	move('B', .1, false);
-
+	liftHang(); // 4300
+	dropHang( 1.5 );
+//	move('B', .1, false);
 	liftStarPont2();
-	liftStarPontDropAfter(); // in case the throw did not work
-  setToScoop();
+//	liftStarPontDropAfter(); // in case the throw did not work
+//	dropHang( 3.3 );
+	StartDropHang ();
+	setToScoop();
 	// usually don't get further than this in autonomous
-	move('F', 3, false);
+	move('F', 2.5, false);
+	stopHang ();
   moveElbow ('U', 50);
   wait1Msec(800);
   stopElbow();
-	move('B', 4, true);
-//	move('F', .3, false);
-/**	wait1Msec(100);
-	motor[StarGrabberRight] = -40;
-	motor[StarGrabberLeft] = 40;
-	wait1Msec(500);
-	stopStarGrabber();
-	**/
-
+	move('B',3, true);
 	liftStarPont2();
-	liftStarPontDropAfter(); // in case the throw did not work
-	move('B', .1, false);
+//	liftStarPontDropAfter(); // in case the throw did not work
+
+//repeat
+	setToScoop();
+	move('F', 2.5, false);
+  moveElbow ('U', 50);
+  wait1Msec(800);
+  stopElbow();
+	move('B', 3, true);
+	liftStarPont2();
+//   liftStarPontDropAfter(); // in case the throw did not work
+
+
+
 }
 
 void pre_auton()
