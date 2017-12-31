@@ -533,7 +533,7 @@ task autonomous()
 
 task usercontrol()
 {
-// User control code here, inside the loop
+// User control code here, inside the loop, jasmine here is where the joystick code is
 
 while (true)
 {
@@ -578,13 +578,13 @@ while (true)
 	{
 		motor[StarGrabberRight] = 40;
 		motor[StarGrabberLeft] = -40;
-		continue;
+//		continue;
 	}
 	else if (vexRT[Btn6U] == 1)
 	{
 		motor[StarGrabberRight] = -40;
 		motor[StarGrabberLeft] = 40;
-		continue;
+//		continue;
 	}
 	else
 	{
@@ -597,13 +597,13 @@ while (true)
 	{
 		motor[HangLeft] = HANG_LEFT_UP;
 		motor[HangRight] = HANG_RIGHT_UP;
-		continue; // so it doesn't hit the else statements that set the motors to 0
+	//	continue; // so it doesn't hit the else statements that set the motors to 0
 	}
 	else if (vexRT[Btn7D] == 1)
 	{
 		motor[HangLeft] = HANG_LEFT_DOWN;
 		motor[HangRight] = HANG_RIGHT_DOWN;
-		continue; // so it doesn't hit the else statements that set the motors to 0
+		//continue; // so it doesn't hit the else statements that set the motors to 0
 	}
 	else
 	{
@@ -653,7 +653,7 @@ while (true)
 	}
 
 	/** coding partner button 6
-	    just add Xmtr2 to the button name **/
+	    just add Xmtr2 to the button name
 	if (vexRT[Btn6DXmtr2] == 1) // 6 down will run autonomous
   {
          	GSautonomous() ;
@@ -661,6 +661,7 @@ while (true)
         // only works correctly if elbow and shoulder start bent in
      // should be fixed
   }
+  **/
    /**
   if (vexRT[Btn6UXmtr2] == 1) // 6 up will run lift star and then end of autonomous
   {
@@ -669,6 +670,7 @@ while (true)
      // should be fixed
   }
 **/
+/**
 if (vexRT[Btn7DXmtr2] == 1) // 7 down will run lift star pont
   {
          liftStarPont2();
@@ -694,7 +696,7 @@ if (vexRT[Btn7DXmtr2] == 1) // 7 down will run lift star pont
   }
 
 
-
+**/
 
 }
 }

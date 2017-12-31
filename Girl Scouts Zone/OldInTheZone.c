@@ -369,13 +369,13 @@ task usercontrol()
 		{
 			motor[StarGrabberRight] = 127;
 			motor[StarGrabberLeft] = -127;
-			continue;
+		//	continue;
 		}
 		else if (vexRT[Btn6U] == 1)
 		{
 			motor[StarGrabberRight] = -127;
 			motor[StarGrabberLeft] = 127;
-			continue;
+		//	continue;
 		}
 		else
 		{

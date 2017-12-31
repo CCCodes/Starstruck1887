@@ -380,6 +380,14 @@ void liftHang()
 	motor[HangLeft] = 0;
 	motor[HangRight] = 0;
 }
+void liftHangShorter() // for autonomous
+{
+		motor[HangLeft] = HANG_LEFT_UP;
+		motor[HangRight] = HANG_RIGHT_UP;
+		wait1Msec(3500);
+		motor[HangLeft] = 0;
+		motor[HangRight] = 0;
+}
 void startLiftHang()
 {
 	motor[HangLeft] = HANG_LEFT_UP;
@@ -468,8 +476,9 @@ void GSautonomous()
 	move('B', .5, true);
 	stopHang();
 		move('B', 3.5, true);
-	move('F', .3, false);
-	liftHang(); // 4300
+	move('F', .18, false);
+	liftHangShorter(); // 3500
+	//liftHang(); // 4300
 	dropHang( 1.5 );
 //	move('B', .1, false);
 	liftStarPont2();
@@ -677,6 +686,7 @@ if (vexRT[Btn7DXmtr2] == 1) // 7 down will run lift star pont
   }
  if (vexRT[Btn5UXmtr2] == 1) // 5 up will run autonomous push
   {
+
          GSautonomousJustPush();
         // only works correctly if elbow and shoulder start bent in
      // should be fixed
