@@ -595,15 +595,15 @@ while (true)
 	// control both hanging motors with button 7 U and D;
 	if (vexRT[Btn7U] == 1)
 	{
-		motor[HangLeft] = HANG_LEFT_UP;
-		motor[HangRight] = HANG_RIGHT_UP;
-	//	continue; // so it doesn't hit the else statements that set the motors to 0
+		motor[HangLeft] = HANG_LEFT_DOWN;
+		motor[HangRight] = HANG_RIGHT_DOWN;
+		continue; // so it doesn't hit the else statements that set the motors to 0
 	}
 	else if (vexRT[Btn7D] == 1)
 	{
-		motor[HangLeft] = HANG_LEFT_DOWN;
-		motor[HangRight] = HANG_RIGHT_DOWN;
-		//continue; // so it doesn't hit the else statements that set the motors to 0
+		motor[HangLeft] = HANG_LEFT_UP;
+		motor[HangRight] = HANG_RIGHT_UP;
+		continue; // so it doesn't hit the else statements that set the motors to 0
 	}
 	else
 	{
