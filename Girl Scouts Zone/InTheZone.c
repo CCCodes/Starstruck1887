@@ -48,9 +48,9 @@
 
    float turnPoleTime = .3;
 
-   float travelPoleTime = 3;
+   float travelPoleTime = 1.5;
    bool stopAtButtonIndicator = true;
-   float backAfterPoleTime = .5;
+   float backAfterPoleTime = .1;
 
    float hangArmDownTime = 1.5;
    int hangArmDownSpeed = 60;
