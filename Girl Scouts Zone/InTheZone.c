@@ -1,14 +1,14 @@
 #pragma config(Sensor, in1,    shoulder,       sensorPotentiometer)
 #pragma config(Sensor, in2,    elbow,          sensorPotentiometer)
-#pragma config(Sensor, dgtl1,  bumper,         sensorDigitalIn)
-#pragma config(Sensor, dgtl2,  jump,           sensorDigitalIn)
+#pragma config(Sensor, dgtl1,  jump,           sensorDigitalIn)
+#pragma config(Sensor, dgtl2,  bumper,         sensorTouch)
 #pragma config(Motor,  port1,           RightBackWheel, tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,           RightFrontWheel, tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port3,           StarGrabberRight, tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port3,           TinyWheel,     tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port4,           LiftLeft,      tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port5,           LiftRight,     tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port6,           HangLeft,      tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port7,           StarGrabberLeft, tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port7,           ConeGrabberMotor, tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port8,           HangRight,     tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port9,           LeftFrontWheel, tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port10,          LeftBackWheel, tmotorVex393_HBridge, openLoop)
@@ -17,12 +17,11 @@
 //Opens Debug Stream Window automatically
 #pragma DebuggerWindows("DebugStream")
 
-#define HANG_RIGHT_UP -127
-#define HANG_RIGHT_DOWN 127
-#define HANG_LEFT_UP 127
-#define HANG_LEFT_DOWN -127
-#define STAR_GRABBER_CLOSE -60
-#define STAR_GRABBER_OPEN 60
+#define HANG_RIGHT_SPEED 127 // this is the up speed direction
+#define HANG_LEFT_SPEED -127 // this is the up speed direction
+
+#define GRABBER_CLOSE -60
+#define GRABBER_OPEN 60
 
 // This code is for the VEX cortex platform
 #pragma platform(VEX2)
@@ -35,29 +34,30 @@
 
 //Main competition background code...do not modify!
 #include "Vex_Competition_Includes.c"
-// values for controlling throw
-   // first fold up
-   int shoulderValueForElbowToFoldUp = 500; // start backing up elbow at 20 degrees of shoulder
-   int elbowFirstFoldUpValue = 3042; // how far up the elbow goes in the beginning--was 3042
-   int elbowFirstFoldDownValue = 3500; // how far up the elbow goes in the beginning--was 3042
-   // move to parallel
-   int shoulderParallel = 1000; //
-   int elbowGoalWhenParallel = 2000; // where we want the elbow when the shoulder is parallel
-   // move to ready to throw
-   int shoulderUprightValue = 2000; // last value upright 2657 was 2000
-   int elbowFoldBackStop = 1204; // elbow folded back far enough- was 1400-was 1600
-   // throw stops
-   int elbowThrowStop = 1400; // elbow value to stop throwing 1200
-   int shoulderThrowStop = 2500 ; //  but momentum pushes it past this 2400 was 2500
-   // drop stops
-   int shoulderDropStop = 2657;
-   int elbowDropStop = 2300;
-   // move controls
-   bool shoulderMoving = false;
-   bool elbowMoving = false;
-   int maxFunctionTime = 10000; // maximim time for a throw
+// values for controlling autonomous
+   //
+   // remember to consider .4 sec added every time the wheels move because
+   //     move adds a little stop.
+   int grabberSlowSpeed = 30;
+   int grabberFastSpeed = 100  ;
 
-void move(char direction, float time, bool useBumper)
+   float grabberCloseTime = .25;
+   float hangArmUpTime = 4;
+   int hangArmUpSpeed = 127;
+   char turnPoleDirection = 'R' ;
+
+   float turnPoleTime = .3;
+
+   float travelPoleTime = 3;
+   bool stopAtButtonIndicator = true;
+   float backAfterPoleTime = .5;
+
+   float hangArmDownTime = 1.5;
+   int hangArmDownSpeed = 60;
+   float grabberOpenTime = .25;
+   float finalBackTime = .25;
+
+void move(char direction, float time, bool useBumper)// time in seconds
 {
 	switch (direction)
 	{
@@ -90,11 +90,12 @@ void move(char direction, float time, bool useBumper)
 	}
 
 	int countRunTimeMsec = 0;
-	if (useBumper) // use bumper if 0 is passed as the time parameter
+	if (useBumper) //
 	{
 		// just in case the sensor is never pushed
 		// 1 means not pushed
-		while (SensorValue[bumper] == 1 && countRunTimeMsec < time * 1000.0)
+
+		while (SensorValue[bumper] == 0 && countRunTimeMsec < time * 1000.0)
 		{
 			wait1Msec(10);
 			countRunTimeMsec += 10;
@@ -113,27 +114,37 @@ void move(char direction, float time, bool useBumper)
 	motor[RightBackWheel] = 0;
 	motor[RightFrontWheel] = 0;
 
-	// and now wait a second before next function
-	wait1Msec(1000);
+	// and now wait a short time before next function
+	wait1Msec(400);
 }
 
-void stopStarGrabber()
+
+void stopHangArm()
 {
-	motor[StarGrabberLeft] = 0;
-	motor[StarGrabberRight] = 0;
+	motor[HangLeft] = 0;
+	motor[HangRight] = 0;
 }
-void stopElbow()
+void stopLiftBox()
 {
-	motor[StarGrabberLeft] = 0;
-	motor[StarGrabberRight] = 0;
-}
-void stopShoulder()
-{
-			motor[LiftLeft] = 0;
+		motor[LiftLeft] = 0;
    	motor[LiftRight] = 0;
 }
 
-void moveShoulder(char dir, int speed){
+
+void moveHangArm(char dir, int speed ){
+	if (dir == 'D'){
+		motor[HangLeft] = speed;
+   	motor[HangRight] = (speed * -1);
+  }
+  else
+  {
+    motor[HangLeft] = (speed * -1);
+   	motor[HangRight] = speed;
+  }
+
+}
+
+void moveLiftBox(char dir, int speed){
 	if (dir == 'U'){
 		motor[LiftLeft] = speed;
    	motor[LiftRight] = (speed * -1);
@@ -144,371 +155,55 @@ void moveShoulder(char dir, int speed){
    	motor[LiftRight] = speed;
   }
 }
-void moveElbow (char dir, int speed){
-	   if (dir == 'U') {
-				motor[StarGrabberRight] = (speed * -1);
-	      motor[StarGrabberLeft] = speed;
-	   }
-	   else {
-				motor[StarGrabberRight] = speed;
-	      motor[StarGrabberLeft] = (speed * -1) ;
-	   }
+void openConeGrabber (int speed){
+	  motor[ConeGrabberMotor] = (speed * -1);
 }
- void liftStarPont2( )
-{
-	//Clears Debug Stream before use
-	clearDebugStream();
-  maxFunctionTime = 5500;//was 6000
-  shoulderMoving = false;
-  elbowMoving = false;
-  if (SensorValue(shoulder) > shoulderUprightValue
-  	  || SensorValue(shoulder) == 0) { // verify it is not too far up or no pont reading before starting
-  return;
-  }
-  // now we know the shoulder is in range
-  clearTimer(T1); // use a timer because it has to stop if problems occur and give control back to remote
-                    // if this timer ever hits the max pont time,
+void closeConeGrabber (int speed){
 
-  // if the shoulder starts very low, get a starting position set by first moving elbow to correct start)
-  writeDebugStreamLine("At shoulder low test The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-  if (SensorValue(shoulder) < shoulderValueForElbowToFoldUp)  {
-   writeDebugStreamLine("doing low elbow reset");
-  	   if (SensorValue(elbow) < elbowFirstFoldUpValue){ // elbow folded back too far
-  	      moveElbow('U',40)	; //was 40
-  	      writeDebugStreamLine("started elbow up");
-  	      while (SensorValue(elbow) < elbowFirstFoldUpValue && time1[T1] < maxFunctionTime ) {} // wait until the elbow moves up
-  	      writeDebugStreamLine("stopped the elbow");
-  			  stopElbow();
-  	    }
-  	    // elbow needs to drop down
-  	    if (SensorValue(elbow) >  elbowFirstFoldDownValue) // elbow folded back too far- just commented out 2.23
-  	    {
-  	  		moveElbow('D',20)	; //was 40
-  	      writeDebugStreamLine("started elbow down");
-  	      while (SensorValue(elbow) > elbowFirstFoldDownValue && time1[T1] < maxFunctionTime ) {} // wait until the elbow moves up
-  	      writeDebugStreamLine("stopped the elbow");
-  			  stopElbow();
-  	   }
-  }
-  writeDebugStreamLine("After shoulder low test  and before parallel, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-
-  // now you know it is either low and has the elbow up, or you are somewhere in the middle of a throw
-  // you also know it the arm does have to move.
-  // if you are less than parallel to ground, move up until you are parallel with elbow slightly up
-if (SensorValue(shoulder) < shoulderParallel)  {
-	   writeDebugStreamLine("doing shoulder up during parallel");
-	  moveShoulder('U',127); // start the shoulder going up before the while loop starts
-	   moveElbow('D',20)	; // start the elbow going down
-	   shoulderMoving = true;
-	   elbowMoving  = true;
-	  while( (shoulderMoving || elbowMoving ) && time1[T1] < maxFunctionTime ) { // and timer value less than max
-			   if (SensorValue(shoulder) > shoulderParallel && shoulderMoving ) {
-			     	//stopShoulder();
-			     	moveShoulder('U',20);
-			     	shoulderMoving = false;
-			     	   writeDebugStreamLine("just stopped the shoulder during shoulder parallel");
-			     	   writeDebugStreamLine(" The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-		     }
-		     if (SensorValue(elbow) < elbowGoalWhenParallel && elbowMoving) {
-		      //  stopElbow();
-		        moveElbow('U',10); // opposite direction a bit
-		        elbowMoving = false;
-		         writeDebugStreamLine("just stopped the elbow during shoulder parallel");
-			     	 writeDebugStreamLine(" The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-		     }
-	   }
-	   writeDebugStreamLine("After shoulder   parallel  , The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-
+		motor[ConeGrabberMotor] = (speed );
  }
-   writeDebugStreamLine(" before final shoulder up, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-
-  // now you   you are somewhere in the middle of a throw that is at least greater than parallel to floor but
-  // you also know  the arm does have to move.
-  // get to pre-throw position
-if (SensorValue(shoulder) < shoulderUprightValue )  { // should not be necessary but we really do not want to tip
-	  moveShoulder('U',127); // start the shoulder going up before the while loop starts
-	   moveElbow('D',20)	; // start the elbow going down
-	   shoulderMoving = true;
-	   elbowMoving  = true;
-	  writeDebugStreamLine("doing final shoulder up");
-	  while(( shoulderMoving || elbowMoving)&& time1[T1] < maxFunctionTime ) { // and timer value less than max
-			   if (SensorValue(shoulder) >  shoulderUprightValue && shoulderMoving ) {
-			     //	stopShoulder();
-			      moveShoulder('U',20);
-			     	shoulderMoving = false;
-			     	 writeDebugStreamLine("just stopped the shoulder during last shoulder up");
-		     }
-		     if (SensorValue(elbow) < elbowFoldBackStop  && elbowMoving ) {
-		       // stopElbow();
-		        moveElbow('U',15); // opposite direction a bit
-		        elbowMoving = false;
-		        writeDebugStreamLine("just stopped the elbow during last shoulder up");
-		     }
-	   }
- }
-   writeDebugStreamLine("After final shoulder up, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-// and now throw
- wait1Msec(200); // wait to be sure it is in the right place
-if (SensorValue(shoulder) < shoulderThrowStop )  { // should not be necessary but we really do not want to tip
-	  moveShoulder('U',127); // start the shoulder going up before the while loop starts
-	   moveElbow('U',127)	; // start the elbow going down
-	   shoulderMoving = true;
-	   elbowMoving  = true;
-	  writeDebugStreamLine("doing final throw");
-	  while(( shoulderMoving || elbowMoving) && time1[T1] < maxFunctionTime ){ // and timer value less than max
-			   if (SensorValue(shoulder) >  shoulderThrowStop && shoulderMoving ) {
-			      stopShoulder();
-			     //	moveShoulder('D',50); // start moving other direction a little
-			     	shoulderMoving = false;
-			     	 writeDebugStreamLine("just stopped the shoulder during throw");
-		     }
-		     if (SensorValue(elbow) > elbowThrowStop  && elbowMoving ) {
-		        stopElbow();
-		        moveElbow('D',5);
-		        elbowMoving = false;
-		        writeDebugStreamLine("just stopped the elbow during throw");
-		     }
-	   }
- }
-   writeDebugStreamLine("After throw, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-   stopShoulder();
-   stopElbow();
-}
-void liftStarPontDropAfter(){
-	// assuming this runs right after lift star pont in autonomous, and timer and max time already set
- // after hard throw drop star
- // if shoulder is beyond upright, go back so it does not tip
-   wait1Msec(100); // give it a chance to stabalize
-   writeDebugStreamLine("before reset, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-   if (SensorValue(shoulder) >= shoulderDropStop ){
-      writeDebugStreamLine("after throw setting shoulder back down to drop stop");
-     moveShoulder('D',20);
-     while (SensorValue(shoulder) >= shoulderDropStop && time1[T1] < maxFunctionTime ){};
-     stopShoulder();
-     writeDebugStreamLine("After reset, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-   }
-   wait1Msec(100); // it will drop a bit too much
-   if (SensorValue(shoulder) < shoulderDropStop ){
-    // now put it back where it belongs
-
-     writeDebugStreamLine("after throw pushing shoulder back up to drop stop");
-     moveShoulder('U',50);
-     while (SensorValue(shoulder) < shoulderDropStop && time1[T1] < maxFunctionTime ){};
-     stopShoulder();
-     writeDebugStreamLine("After reset, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-   }
-   writeDebugStreamLine("After prep to drop, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-   wait1Msec(100); // give it a chance to stabalize
-   // then gently drop
-   if (SensorValue(elbow) < elbowDropStop) {
-     writeDebugStreamLine("final elbow up");
-     moveElbow('U',20);
-     while (SensorValue(elbow) < elbowDropStop && time1[T1] < maxFunctionTime ){};
-     stopElbow();
-   }
-     writeDebugStreamLine("After drop, The shoulder value at %d elbow is %d", SensorValue(shoulder), SensorValue(elbow));
-}
-
-
-void liftStar()
+void stopConeGrabber()
 {
-	motor[StarGrabberRight] = 40;
-	motor[StarGrabberLeft] = -40;
-	wait1Msec(800);
-	stopStarGrabber();
-	motor[LiftLeft] = 127;
-	motor[LiftRight] = -127;
-	wait1Msec(400);  // was 500
-	motor[StarGrabberRight] = 40;
-	motor[StarGrabberLeft] = -40;
-	wait1Msec(250); // was 300
-	stopStarGrabber();
-	//lifted part of the way
-	wait1Msec(400); //was 500
-	motor[StarGrabberRight] = -40;
-	motor[StarGrabberLeft] = 40;
-	wait1Msec(150); // was 200
-	stopStarGrabber();
-	/**	motor[StarGrabberLeft] = -30;
-	motor[StarGrabberRight] = 30;
-	wait1Msec(1500); **/
-	//stopStarGrabber();
-	//flatten star grabber
-	wait1Msec(200);
-	motor[StarGrabberRight] = -40;
-	motor[StarGrabberLeft] = 40;
-	wait1Msec(200);
-	stopStarGrabber();
-	wait1Msec(300);
-	motor[StarGrabberLeft] = 127;
-	motor[StarGrabberRight] = -127;
-	wait1Msec(200);
-	stopStarGrabber();
-	motor[LiftLeft] = 0;
-	motor[LiftRight] = 0;
-	//end of toss
-
-	wait1Msec(1000);
-	move('F', .5, false);
-	//motor[StarGrabberLeft] = -40;
-	//motor[StarGrabberRight] = 40;
-	//wait1Msec(600);
-	//stopStarGrabber();
-
-	//motor[LiftLeft] = -100;
-	//motor[LiftRight] = 100;
-	//wait1Msec(1000);
-	//motor[LiftLeft] = 0;
-	//motor[LiftRight] = 0;
-
-}
-
-void putDownLift()
-{
-	motor[LiftLeft] = -127;
-	motor[LiftRight] = 127;
-	wait1Msec(1000);
-	motor[LiftLeft] = 0;
-	motor[LiftRight] = 0;
-}
-
-void liftHang()
-{
-	motor[HangLeft] = HANG_LEFT_UP;
-	motor[HangRight] = HANG_RIGHT_UP;
-	wait1Msec(4300); // was 4800
-	motor[HangLeft] = 0;
-	motor[HangRight] = 0;
-}
-void liftHangShorter() // for autonomous
-{
-		motor[HangLeft] = HANG_LEFT_UP;
-		motor[HangRight] = HANG_RIGHT_UP;
-		wait1Msec(3500);
-		motor[HangLeft] = 0;
-		motor[HangRight] = 0;
-}
-void startLiftHang()
-{
-	motor[HangLeft] = HANG_LEFT_UP;
-	motor[HangRight] = HANG_RIGHT_UP;
-}
-void stopHang()
-{
-	motor[HangLeft] = 0;
-	motor[HangRight] = 0;
-}
-void dropHang( float time )
-{
-	motor[HangLeft] = HANG_LEFT_DOWN;
-	motor[HangRight] = HANG_RIGHT_DOWN;
-	wait1Msec(time * 1000); // was 4000 - was 4300
-	motor[HangLeft] = 0;
-	motor[HangRight] = 0;
-}
-
-void StartDropHang ()
-{
-	motor[HangLeft] = HANG_LEFT_DOWN;
-	motor[HangRight] = HANG_RIGHT_DOWN;
-}
-
-void smack()
-{
-	/** comment out because stargrabber changed configuration
-	motor[StarGrabber] = 70;
-	wait1Msec(600);
-	motor[StarGrabber] = -70;
-	wait1Msec(600);
-	motor[StarGrabber] = 0;
-	**/
-}
-void setToScoop(){
-	// only works correctly if elbow and shoulder start bent in
- // should be fixed
-
-
-	// send elbow down until 2350 or less
-	clearTimer(T2);
-  // bring elbow up far enough
-	if (SensorValue(elbow) < 2400) {
-		moveElbow('U',40);
-	  while (SensorValue(elbow) < 2202    &&  time1[T2] < 1500){}//3152 was 2400
-		stopElbow();
-  }
-	//put shoulder to bottom if not already
-  clearTimer(T2);
-  if (SensorValue(shoulder) > 184) {
-	  moveShoulder('D',80);
-		while (SensorValue(shoulder) > 184 &&  time1[T2] < 2000){} // go down until 248 but stop at 3 sec
-	  stopShoulder();
-	}
-		// push elbow down far enough
-	if (SensorValue(elbow) > 2400) {
-		moveElbow('D',40);
-	  while (SensorValue(elbow) > 2400    &&  time1[T2] < 2000){}
-		stopElbow();
-  }
-}
-
-
-void GSautonomousJustPush()
-{
-
-wait1Msec(5000);
-
-  move('B', 4, true);
-	move('L', .01, true);
-	int count;
-	for(count= 1;count <= 4; count = count+1){
-	   move('F', .3, false);
-	   move('B', .3, false);
-   }
+	motor[ConeGrabberMotor] = 0;
 }
 
 void GSautonomous()
 {
-	//	motor[StarGrabberRight] = -40;
-	//	motor[StarGrabberLeft] = 40;
-	//	wait1Msec(1000);
-	//	stopStarGrabber();
-  startLiftHang();
-	move('B', .5, true);
-	stopHang();
-		move('B', 3.5, true);
-	move('F', .18, false);
-	liftHangShorter(); // 3500
-	//liftHang(); // 4300
-	dropHang( 1.5 );
-//	move('B', .1, false);
-	liftStarPont2();
-//	liftStarPontDropAfter(); // in case the throw did not work
-//	dropHang( 3.3 );
-	StartDropHang ();
-	setToScoop();
-	// usually don't get further than this in autonomous
-	move('F', 2.5, false);
-	stopHang ();
-  moveElbow ('U', 50);
-  wait1Msec(800);
-  stopElbow();
-	move('B',3, true);
-	liftStarPont2();
-//	liftStarPontDropAfter(); // in case the throw did not work
-
-//repeat
-	setToScoop();
-	move('F', 2.5, false);
-  moveElbow ('U', 50);
-  wait1Msec(800);
-  stopElbow();
-	move('B', 3, true);
-	liftStarPont2();
-//   liftStarPontDropAfter(); // in case the throw did not work
-
-
-
+   // the grabber will snap shut for a time and then apply low pressure until it opens
+   closeConeGrabber ( grabberFastSpeed);
+   wait1Msec (grabberCloseTime * 1000);
+   closeConeGrabber ( grabberSlowSpeed); // after closing, this applies constant pressure
+   //
+   // move the arm up and then stop - eventually make this a potentiometer
+   moveHangArm('U', hangArmUpSpeed); // move up now that you grabbed the cone
+   wait1Msec (hangArmUpTime * 1000);
+   stopHangArm();
+   // set left/right
+      if (SensorValue[jump] == 0) // jump is in
+		{
+			turnPoleDirection = 'L'; // turn left when jump 12 is in
+		}
+		else
+		{
+			turnPoleDirection = 'R'; // turn right when jump 12 is out
+		}
+   // go to the pole, hit it and back up a bit
+   move(turnPoleDirection, turnPoleTime, false);  // turn to pole
+   move('F', travelPoleTime, stopAtButtonIndicator);  // get to pole
+   move('B', backAfterPoleTime, false);  // back up after hitting pole
+   //
+   // put the arm down slowly
+   moveHangArm('D', hangArmDownSpeed); // move up now that you grabbed the cone
+   wait1Msec (hangArmDownTime * 1000);
+   stopHangArm();
+   // open the grabber quickly and then stop
+   openConeGrabber ( grabberFastSpeed);
+   wait1Msec (grabberOpenTime * 1000);
+   stopConeGrabber();
+   // Back up when the cone is released
+   move('B', finalBackTime, false);
 }
+
 
 void pre_auton()
 {
@@ -558,7 +253,7 @@ while (true)
 		motor[RightBackWheel] = 0;
 	}
 
-	if (vexRT[Btn5D] == 1) // 5 Lift 2 arms up and down
+	if (vexRT[Btn5D] == 1) // 5 Lift  box up and down
 	{
 		motor[LiftLeft] = -127;
 		motor[LiftRight] = 127;
@@ -574,129 +269,86 @@ while (true)
 		motor[LiftRight] = 0;
 	}
 
-	if (vexRT[Btn6D] == 1) // 6 is up and down of elbow
+	if (vexRT[Btn8R] == 1) // 8R opens the conegrabber and 8L closes it and 8U applies small pressure
 	{
-		motor[StarGrabberRight] = 40;
-		motor[StarGrabberLeft] = -40;
-//		continue;
+ 		motor[ConeGrabberMotor] = -100; // fast open 8R
 	}
-	else if (vexRT[Btn6U] == 1)
+	else if (vexRT[Btn8L] == 1)
 	{
-		motor[StarGrabberRight] = -40;
-		motor[StarGrabberLeft] = 40;
-//		continue;
+ 		motor[ConeGrabberMotor] = 100; // fast close 8L
+	}
+	else if (vexRT[Btn8U] == 1)
+	{
+		motor[ConeGrabberMotor] = 30; // very slow close 8U
+	}
+	else if (vexRT[Btn8D] == 1)
+	{
+		motor[ConeGrabberMotor] = -40; // very slow open 8D
 	}
 	else
 	{
-		motor[StarGrabberRight] = 0;
-		motor[StarGrabberLeft] = 0;
+		motor[ConeGrabberMotor] = 0;
 	}
 
-	// control both hanging motors with button 7 U and D;
+  // control the lift box with the # 6 buttons
+	if (vexRT[Btn6U] == 1)
+	{
+		motor[HangLeft] = HANG_LEFT_SPEED ;
+		motor[HangRight] = HANG_RIGHT_SPEED;
+
+	}
+	else if (vexRT[Btn6D] == 1)
+	{
+		motor[HangLeft] = HANG_LEFT_SPEED * -1;
+		motor[HangRight] = HANG_RIGHT_SPEED * -1;
+
+	}
+	else
+	{
+		motor[HangLeft] = 0;
+		motor[HangRight] = 0;
+	}
+
+	  // control the tiny wheel with the 7 up and down button
 	if (vexRT[Btn7U] == 1)
 	{
-		motor[HangLeft] = HANG_LEFT_DOWN;
-		motor[HangRight] = HANG_RIGHT_DOWN;
-		continue; // so it doesn't hit the else statements that set the motors to 0
+		motor[TinyWheel] = 127;
 	}
 	else if (vexRT[Btn7D] == 1)
 	{
-		motor[HangLeft] = HANG_LEFT_UP;
-		motor[HangRight] = HANG_RIGHT_UP;
-		continue; // so it doesn't hit the else statements that set the motors to 0
+ 		motor[TinyWheel] = -127;
 	}
 	else
 	{
-		motor[HangLeft] = 0;
-		motor[HangRight] = 0;
+		motor[TinyWheel] = 0;
+
 	}
 
-	if (vexRT[Btn7L] == 1) // handles left arm alone using left and right 7
-	{
-		motor[HangLeft] = HANG_LEFT_UP;
-	}
-	else if (vexRT[Btn7R] == 1)
-	{
-		motor[HangLeft] = HANG_LEFT_DOWN;
-	}
-	else
-	{
-		motor[HangLeft] = 0;
-	}
+	// run autonomous when 7R is pushed
 
-	if (vexRT[Btn8L] == 1) // handles right arm alone using lefgt and right 8
-	{
-		motor[HangRight] = HANG_RIGHT_UP;
-	}
-	else if (vexRT[Btn8R] == 1)
-	{
-		motor[HangRight] = HANG_RIGHT_DOWN;
-	}
-	else
-	{
-		motor[HangRight] = 0;
-	}
-	// run autonomous when 8Up is pushed
 
-	if (vexRT[Btn8U] == 1)
+	if (vexRT[Btn7R] == 1)
 	{
-		//GSautonomous();
-//		liftStarPont(2530, 850);
-	liftStarPont2();
-	//	liftStar();
-	}
-  if (vexRT[Btn8D] == 1) // 6 down will put the scoop arm on the floor using potentiometer
-	{
-		 setToScoop() ;
-		// only works correctly if elbow and shoulder start bent in
-	 // should be fixed
-	}
+	  	GSautonomous();
+    // continue;
 
+
+       motor[TinyWheel] = 0;
+
+	}
+	if (vexRT[Btn7L] == 1){
+		 if( SensorValue[bumper]  == 1 )
+     {  motor[TinyWheel] = -127; }
+
+  }
 	/** coding partner button 6
 	    just add Xmtr2 to the button name
 	if (vexRT[Btn6DXmtr2] == 1) // 6 down will run autonomous
   {
          	GSautonomous() ;
-         	continue;
-        // only works correctly if elbow and shoulder start bent in
-     // should be fixed
   }
   **/
-   /**
-  if (vexRT[Btn6UXmtr2] == 1) // 6 up will run lift star and then end of autonomous
-  {
-  	  GSautonomousPart2()
-        // only works correctly if elbow and shoulder start bent in
-     // should be fixed
-  }
-**/
-/**
-if (vexRT[Btn7DXmtr2] == 1) // 7 down will run lift star pont
-  {
-         liftStarPont2();
-        // only works correctly if elbow and shoulder start bent in
-     // should be fixed
-         continue;
-  }
 
-  if (vexRT[Btn7UXmtr2] == 1) // 7 up will run lift star
-  {
-         liftStar();
-        // only works correctly if elbow and shoulder start bent in
-     // should be fixed
-         continue;
-  }
- if (vexRT[Btn5UXmtr2] == 1) // 5 up will run autonomous push
-  {
-
-         GSautonomousJustPush();
-        // only works correctly if elbow and shoulder start bent in
-     // should be fixed
-         continue;
-  }
-
-
-**/
 
 }
 }
