@@ -39,6 +39,7 @@
    // remember to consider .4 sec added every time the wheels move because
    //     move adds a little stop.
    int grabberSlowSpeed = 30;
+   int grabberMedSpeed = 60;
    int grabberFastSpeed = 100  ;
 
    float grabberCloseTime = .25;
@@ -46,16 +47,16 @@
    int hangArmUpSpeed = 127;
    char turnPoleDirection = 'R' ;
 
-   float turnPoleTime = .3;
+   float turnPoleTime = 0;
 
    float travelPoleTime = 1.5;
    bool stopAtButtonIndicator = true;
-   float backAfterPoleTime = .1;
+   float backAfterPoleTime = .125;
 
    float hangArmDownTime = 1.5;
    int hangArmDownSpeed = 60;
    float grabberOpenTime = .25;
-   float finalBackTime = .25;
+   float finalBackTime = .75;
 
 void move(char direction, float time, bool useBumper)// time in seconds
 {
@@ -167,7 +168,7 @@ void stopConeGrabber()
 	motor[ConeGrabberMotor] = 0;
 }
 
-void GSautonomous()
+void GSautonomousReal()
 {
    // the grabber will snap shut for a time and then apply low pressure until it opens
    closeConeGrabber ( grabberFastSpeed);
@@ -179,6 +180,7 @@ void GSautonomous()
    wait1Msec (hangArmUpTime * 1000);
    stopHangArm();
    // set left/right
+   /**
       if (SensorValue[jump] == 0) // jump is in
 		{
 			turnPoleDirection = 'L'; // turn left when jump 12 is in
@@ -189,6 +191,7 @@ void GSautonomous()
 		}
    // go to the pole, hit it and back up a bit
    move(turnPoleDirection, turnPoleTime, false);  // turn to pole
+   **/
    move('F', travelPoleTime, stopAtButtonIndicator);  // get to pole
    move('B', backAfterPoleTime, false);  // back up after hitting pole
    //
@@ -197,14 +200,48 @@ void GSautonomous()
    wait1Msec (hangArmDownTime * 1000);
    stopHangArm();
    // open the grabber quickly and then stop
-   openConeGrabber ( grabberFastSpeed);
+   openConeGrabber ( grabberMedSpeed);
    wait1Msec (grabberOpenTime * 1000);
    stopConeGrabber();
    // Back up when the cone is released
    move('B', finalBackTime, false);
 }
+void GSautonomousShort()
+{
+   // the grabber will snap shut for a time and then apply low pressure until it opens
+   closeConeGrabber ( grabberFastSpeed);
+   wait1Msec (grabberCloseTime * 1000);
+   closeConeGrabber ( grabberSlowSpeed); // after closing, this applies constant pressure
+   //
+   // move the arm up and then stop - eventually make this a potentiometer
+   /**moveHangArm('U', hangArmUpSpeed); // move up now that you grabbed the cone
+   wait1Msec (hangArmUpTime * 1000);
+   stopHangArm();
+   // set left/right
 
-
+      if (SensorValue[jump] == 0) // jump is in
+		{
+			turnPoleDirection = 'L'; // turn left when jump 12 is in
+		}
+		else
+		{
+			turnPoleDirection = 'R'; // turn right when jump 12 is out
+		}
+   // go to the pole, hit it and back up a bit
+   move(turnPoleDirection, turnPoleTime, false);  // turn to pole
+   **/
+ }
+void GSautonomous()
+{
+      if (SensorValue[jump] == 0) // jump is in
+		{
+			GSautonomousShort();//does little
+		}
+		else
+		{
+			GSautonomousReal(); //if the jump is out
+		}
+}
 void pre_auton()
 {
 // Set bStopTasksBetweenModes to false if you want to keep user created tasks
