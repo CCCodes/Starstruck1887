@@ -1,10 +1,10 @@
-#pragma config(Sensor, in1,    shoulder,       sensorPotentiometer)
-#pragma config(Sensor, in2,    elbow,          sensorPotentiometer)
+#pragma config(Sensor, in1,    mobileangle,       sensorPotentiometer) //1431 back / 1840 down / 1860 down / 3240 up
+#pragma config(Sensor, in2,    armangle,          sensorPotentiometer) // 2122 is up / 845 right angle / 240 down
 #pragma config(Sensor, dgtl1,  jump,           sensorDigitalIn)
 #pragma config(Sensor, dgtl2,  bumper,         sensorTouch)
 #pragma config(Motor,  port1,           RightBackWheel, tmotorVex393_HBridge, openLoop)
 #pragma config(Motor,  port2,           RightFrontWheel, tmotorVex393_MC29, openLoop)
-#pragma config(Motor,  port3,           TinyWheel,     tmotorVex393_MC29, openLoop)
+#pragma config(Motor,  port3,           MobileScoop,     tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port4,           LiftLeft,      tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port5,           LiftRight,     tmotorVex393_MC29, openLoop)
 #pragma config(Motor,  port6,           HangLeft,      tmotorVex393_MC29, openLoop)
@@ -57,7 +57,7 @@
    int hangArmDownSpeed = 60;
    float grabberOpenTime = .25;
    float finalBackTime = .75;
-
+   int conePressureToggle = 0 ; // no cone pressure 8U turns it on and any 8 turns it off
 void move(char direction, float time, bool useBumper)// time in seconds
 {
 	switch (direction)
@@ -231,6 +231,75 @@ void GSautonomousShort()
    move(turnPoleDirection, turnPoleTime, false);  // turn to pole
    **/
  }
+ void GSautonomousMobileGoal()
+{
+   // the grabber will snap shut for a time and then apply low pressure until it opens
+   closeConeGrabber ( grabberFastSpeed);
+   wait1Msec (grabberCloseTime * 1000);
+   closeConeGrabber ( grabberSlowSpeed); // after closing, this applies constant pressure
+   //
+   // start moving forward  at 127
+   // // // //
+   // move the arm up and then stop  - eventually make this a potentiometer to 2122
+   moveHangArm('U', hangArmUpSpeed); // move up now that you grabbed the cone
+   wait1Msec (hangArmUpTime * 1000);
+   stopHangArm();
+   //
+   // get the mobile goal arm straight to down 1850?
+   //
+   //
+
+   // move forward to get to the mobile goal and stop at button
+   // // //  move('F',  4 , stopAtButtonIndicator);  // get to mobile goal
+   //
+   // move mobile arm up - forward
+   //
+  // back up start
+   //
+   // put the arm down and drop
+  		motor[HangLeft] = HANG_LEFT_SPEED * -1;
+			motor[HangRight] = HANG_RIGHT_SPEED * -1;
+			int countRunTimeMsec2 = 0;
+  	  while (SensorValue(armangle) > 250 && countRunTimeMsec2 < 2000.0) // 2 seconds max
+  	  {
+  					wait1Msec(10);
+			      countRunTimeMsec2 += 10;
+      }
+      wait1Msec(500);
+
+   stopHangArm();
+   // open the grabber quickly and then stop
+   openConeGrabber ( grabberMedSpeed);
+   wait1Msec (grabberOpenTime * 1000);
+   stopConeGrabber();
+
+   //
+   // set left/right
+   /**
+      if (SensorValue[jump] == 0) // jump is in
+		{
+			turnPoleDirection = 'L'; // turn left when jump 12 is in
+		}
+		else
+		{
+			turnPoleDirection = 'R'; // turn right when jump 12 is out
+		}
+	// turn around
+   // move(turnPoleDirection, turnPoleTime, false);  // turn to go back to goal
+   //
+   // go forward a long time // to get over the first thing
+	 //
+	 // put arms out
+	 //
+	 // a bit more forward
+		//
+	// pull the arms back
+	//
+	// back up
+   **/
+}
+
+
 void GSautonomous()
 {
       if (SensorValue[jump] == 0) // jump is in
@@ -306,25 +375,32 @@ while (true)
 		motor[LiftRight] = 0;
 	}
 
-	if (vexRT[Btn8R] == 1) // 8R opens the conegrabber and 8L closes it and 8U applies small pressure
+	if (vexRT[Btn8R] == 1) // 8R opens the conegrabber and 8L closes it and 8U applies small pressure as a toggle
 	{
  		motor[ConeGrabberMotor] = -100; // fast open 8R
+ 		 conePressureToggle = 0 ; //
 	}
 	else if (vexRT[Btn8L] == 1)
 	{
  		motor[ConeGrabberMotor] = 100; // fast close 8L
+ 		 conePressureToggle = 0 ; //
+
 	}
 	else if (vexRT[Btn8U] == 1)
 	{
-		motor[ConeGrabberMotor] = 30; // very slow close 8U
+			  conePressureToggle = 1;
+ 			  motor[ConeGrabberMotor] = 30; // very slow close 8U toggle
+
 	}
 	else if (vexRT[Btn8D] == 1)
 	{
-		motor[ConeGrabberMotor] = -40; // very slow open 8D
+		   motor[ConeGrabberMotor] = -40; // very slow open 8D
+			 conePressureToggle = 0 ; //
 	}
 	else
 	{
-		motor[ConeGrabberMotor] = 0;
+		if  ( conePressureToggle == 0)
+	    {	motor[ConeGrabberMotor] = 0;}
 	}
 
   // control the lift box with the # 6 buttons
@@ -346,39 +422,108 @@ while (true)
 		motor[HangRight] = 0;
 	}
 
-	  // control the tiny wheel with the 7 up and down button
-	if (vexRT[Btn7U] == 1)
-	{
-		motor[TinyWheel] = 127;
+	  // control the mobile scoop with the 7 up and down button
+	if (vexRT[Btn7D] == 1) // towards the motor
+	{ 	// 1735 is full back
+		// 1102 is straight downdown
+
+	  // 2702 is full outside
+		motor[MobileScoop] = 127;
+	/**		     	   writeDebugStreamLine("moving 7D towards the motor");
+			     	   writeDebugStreamLine(" The mobile lifter value at %d  ", SensorValue(mobileangle));
+
+			     	    clearLCDLine(0);                                  // clear the top VEX LCD line
+						    clearLCDLine(1);                                  // clear the bottom VEX LCD line
+
+						    setLCDPosition(0,0);                              // set the VEX LCD cursor the first line, first space
+						    displayNextLCDString("Potentiometer back:");           // display "Potentiometer:" on the top line
+
+						    setLCDPosition(1,0);                              // set the VEX LCD cursor the second line, first space
+						    displayNextLCDNumber(SensorValue(mobileangle)); // display the reading of the potentiometer sensor
+
+						    wait1Msec(50);                                    // wait 50 milliseconds to help display properly
+	**/
 	}
-	else if (vexRT[Btn7D] == 1)
+	else if (vexRT[Btn7U] == 1) //towards the outside
 	{
- 		motor[TinyWheel] = -127;
+ 		motor[MobileScoop] = -127;
+ 	/**				     	   writeDebugStreamLine("moving 7U towards the motor");
+			     	   writeDebugStreamLine(" The mobile lifter value at %d  ", SensorValue(mobileangle));
+
+			     	    clearLCDLine(0);                                  // clear the top VEX LCD line
+						    clearLCDLine(1);                                  // clear the bottom VEX LCD line
+
+						    setLCDPosition(0,0);                              // set the VEX LCD cursor the first line, first space
+						    displayNextLCDString("Potentiometer up:");           // display "Potentiometer:" on the top line
+
+						    setLCDPosition(1,0);                              // set the VEX LCD cursor the second line, first space
+						    displayNextLCDNumber(SensorValue(mobileangle)); // display the reading of the potentiometer sensor
+
+						    wait1Msec(50);                                    // wait 50 milliseconds to help display properly
+	**/
 	}
+	else if (vexRT[Btn7R] == 1) // set to scoop
+	{
+		    if ( SensorValue(mobileangle) < 1840 ) // push out to front
+		    {
+		    	motor[MobileScoop] = -40;
+		    }
+		    else if ( SensorValue(mobileangle) > 1860 ) // pull back to inside
+		    {
+		    	motor[MobileScoop] = 40;
+		    }
+		    else
+		    {
+		    	motor[MobileScoop] = 0;
+		    }
+  }
+  // 7L - put cone on mobile goal being held
+  /**
+  else if (vexRT[Btn7L] == 1 ) //
+  {
+ 			motor[HangLeft] = HANG_LEFT_SPEED * -1;
+			motor[HangRight] = HANG_RIGHT_SPEED * -1;
+			int countRunTimeMsec2 = 0;
+  	  while (SensorValue(armangle) > 250 && countRunTimeMsec2 < 4000.0) // 2 seconds max
+  	  {
+  					wait1Msec(10);
+			      countRunTimeMsec2 += 10;
+      }
+      wait1Msec(500);
+      motor[HangLeft] = 0;
+		  motor[HangRight] = 0;
+
+		// open cone
+		openConeGrabber ( grabberMedSpeed);
+    wait1Msec (grabberOpenTime * 1000);
+    stopConeGrabber();
+  }
+  **/
 	else
 	{
-		motor[TinyWheel] = 0;
+		motor[MobileScoop] = 0;
 
 	}
 
 	// run autonomous when 7R is pushed
 
-
+/**
 	if (vexRT[Btn7R] == 1)
 	{
 	  	GSautonomous();
     // continue;
 
 
-       motor[TinyWheel] = 0;
+       motor[MobileScoop] = 0;
 
 	}
 	if (vexRT[Btn7L] == 1){
 		 if( SensorValue[bumper]  == 1 )
-     {  motor[TinyWheel] = -127; }
+     {  motor[MobileScoop] = -127; }
 
   }
-	/** coding partner button 6
+  **/
+	/** coding partner button 6 as a sample
 	    just add Xmtr2 to the button name
 	if (vexRT[Btn6DXmtr2] == 1) // 6 down will run autonomous
   {
@@ -386,6 +531,18 @@ while (true)
   }
   **/
 
+ 	     	   writeDebugStreamLine(" The mobile lifter value at %d  ", SensorValue(armangle));
+
+			     	    clearLCDLine(0);                                  // clear the top VEX LCD line
+						    clearLCDLine(1);                                  // clear the bottom VEX LCD line
+
+						    setLCDPosition(0,0);                              // set the VEX LCD cursor the first line, first space
+						    displayNextLCDString("Potentiometer back:");           // display "Potentiometer:" on the top line
+
+						    setLCDPosition(1,0);                              // set the VEX LCD cursor the second line, first space
+						    displayNextLCDNumber(SensorValue(armangle)); // display the reading of the potentiometer sensor
+
+						    wait1Msec(50);                                    // wait 50 milliseconds to help display properly
 
 }
 }
