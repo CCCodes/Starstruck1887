@@ -279,37 +279,39 @@ void GSautonomousShort()
 		    }
    move('F', 5, stopAtButtonIndicator);  // move until you reach the mobile goal
    moveMobileScoop('D',127); //pull the mobile scoop back into body
-   wait1Msec(250);
+   wait1Msec(500);
    stopMobileScoop();
    // drop the cone
    dropcone(400, 500, 3000, 1200, 1200, 500) ;
   	   //    millisec back up, armangle, maxarmdown, millisec arm down after armangle,
       	//        millisec cone open, time arm up
    //
-
+    // move mobile arm up - forward
+      moveMobileScoop('U',127);
+     //move('F', 1, false);  // forward to bar
+      wait1Msec(1000);
+      moveMobileScoop('U',60);
   // back up start
-   move('B', .25, false);  // back up a little
+   move('B', 1.25, false);  // back up a little
    //
    // set left/right
-      if (SensorValue[jump] == 0) // jump is in
-		{
+      //if (SensorValue[jump] == 0) // jump is in
+		//{
 			turnPoleDirection = 'L'; // turn left when jump 12 is in
-		}
+		/**}
 		else
 		{
 			turnPoleDirection = 'R'; // turn right when jump 12 is out
 		}
+		**/
 	// turn around
     move(turnPoleDirection, 1.6, false);  // turn to go back to goal
-    // move mobile arm up - forward
-      moveMobileScoop('U',127);
-     move('F', 1, false);  // forward to bar
-        moveMobileScoop('U',60);
+
    //
    //
    // go forward a long time // to get over the first thing
 	 //
-     move('F', 1, false);  // forward to bar
+     move('F', 4, false);  // forward to bar
 
 	// pull the arms back
 	//
