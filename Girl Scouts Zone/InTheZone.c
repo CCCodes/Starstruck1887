@@ -94,7 +94,7 @@ void move(char direction, float time, bool useBumper)// time in seconds
 	if (useBumper) //
 	{
 		// just in case the sensor is never pushed
-		// 1 means not pushed
+		// 1 means pushed
 
 		while (SensorValue[bumper] == 0 && countRunTimeMsec < time * 1000.0)
 		{
@@ -277,7 +277,7 @@ void GSautonomousShort()
 		    	while  (SensorValue(mobileangle) < 2245){};
 		    	motor[MobileScoop] = 0;
 		    }
-   move('F', 5, stopAtButtonIndicator);  // move until you reach the mobile goal
+	 move('F', 4.5, stopAtButtonIndicator);  // move until you reach the mobile goal
    moveMobileScoop('D',127); //pull the mobile scoop back into body
    wait1Msec(500);
    stopMobileScoop();
@@ -292,18 +292,18 @@ void GSautonomousShort()
       wait1Msec(1000);
       moveMobileScoop('U',60);
   // back up start
-   move('B', 1.25, false);  // back up a little
+   move('B', 1.75, false);  // back up a little
    //
    // set left/right
-      //if (SensorValue[jump] == 0) // jump is in
-		//{
-			turnPoleDirection = 'L'; // turn left when jump 12 is in
-		/**}
+     if (SensorValue[jump] == 1) // jump is out
+		{
+			turnPoleDirection = 'L'; // turn left when jump 12 is out
+		}
 		else
 		{
-			turnPoleDirection = 'R'; // turn right when jump 12 is out
+			turnPoleDirection = 'R'; // turn right when jump 12 is in
 		}
-		**/
+
 	// turn around
     move(turnPoleDirection, 1.6, false);  // turn to go back to goal
 
@@ -311,7 +311,7 @@ void GSautonomousShort()
    //
    // go forward a long time // to get over the first thing
 	 //
-     move('F', 4, false);  // forward to bar
+     move('F', 3.5, false);  // forward to bar
 
 	// pull the arms back
 	//
@@ -322,8 +322,9 @@ void GSautonomousShort()
 	// back up
      move('B', .5, false);  // forward to bar
 }
-void GSautonomous()
+/**void GSautonomous()
 {
+
       if (SensorValue[jump] == 0) // jump is in
 		{
 			GSautonomousShort();//does little
@@ -332,7 +333,7 @@ void GSautonomous()
 		{
 			GSautonomousReal(); //if the jump is out
 		}
-}
+}**/
 void pre_auton()
 {
 // Set bStopTasksBetweenModes to false if you want to keep user created tasks
@@ -344,14 +345,7 @@ bStopTasksBetweenModes = true;
 
 task autonomous()
 {
-
-	if (SensorValue[jump] == 0) // jump is in
-	{
-	//	wait1Msec(5000);
-	//	move('F', 4, true);
-	// do GSautonomousJustPushHere
-	}
-	GSautonomous();
+	GSautonomousMobileGoal();
 }
 
 task usercontrol()
@@ -475,7 +469,7 @@ while (true)
 
   }
   //7L - autonomous
-
+/**
   else if (vexRT[Btn7L] == 1 ) //
   {
   	//dropcone(400, 500, 3000, 1200, 1200, 500) ;
@@ -484,6 +478,7 @@ while (true)
  GSautonomousMobileGoal();
 
   }
+  **/
 
 	else
 	{
