@@ -210,7 +210,22 @@ void dropcone(int backupmsec, int arm1angle, int armdown1msec, int arm2msec, int
     wait1Msec(armupmsec);
     stopHangArm();
 }
-
+void mobilePick(){
+ 	//going forward
+    int speedf = 70;
+  	motor[LeftFrontWheel] = speedf;
+		motor[LeftBackWheel] = -1 * speedf;
+		motor[RightFrontWheel] = -1 * speedf;
+		motor[RightBackWheel] = speedf;
+  	//bring mobile goal in
+		motor[MobileScoop]=127;
+		wait1Msec(500);
+		motor[LeftFrontWheel] = 0;
+		motor[LeftBackWheel] = 0;
+		motor[RightFrontWheel] = 0;
+		motor[RightBackWheel] = 0;
+		motor[MobileScoop]=60;
+}
 void GSautonomousReal()
 {
    // the grabber will snap shut for a time and then apply low pressure until it opens
@@ -249,7 +264,7 @@ void GSautonomousReal()
    // Back up when the cone is released
    move('B', finalBackTime, false);
 }
-void GSautonomousShort()
+void GSautonomousOnlyPickCone()
 {
    // the grabber will snap shut for a time and then apply low pressure until it opens
    closeConeGrabber ( grabberFastSpeed);
@@ -261,16 +276,11 @@ void GSautonomousShort()
  void GSautonomousMobileGoal()
 {
    // the grabber will snap shut for a time and then apply low pressure until it opens
-   GSautonomousShort(); // just grab the cone
+   GSautonomousOnlyPickCone(); // just grab the cone
    // start arm moving up
 
    moveHangArm('U', hangArmUpSpeed); // move up now that you grabbed the cone
    move('F', 1, false);  // move while lifting stop arm
-   stopHangArm();
-   // set mobile scoop
- //  moveMobileScoop('U',100); //get the mobile scoop straight down for pickup
-  // move('F', .3, false);  // move while lifting stop arm
-  // stopMobileScoop();
 		   //1635 back /2245 down / 2480 down / 4095 up
 		    if ( SensorValue(mobileangle) < 2245 ) // push out to front
 		    {
@@ -278,22 +288,18 @@ void GSautonomousShort()
 		    	while  (SensorValue(mobileangle) < 2245){};
 		    	motor[MobileScoop] = 0;
 		    }
-	 move('F', 4.5, stopAtButtonIndicator);  // move until you reach the mobile goal
-   moveMobileScoop('D',127); //pull the mobile scoop back into body
-   wait1Msec(500);
-   stopMobileScoop();
+   move('F', 1, false);  // move while lifting stop arm
+   stopHangArm();
+
+	 move('F', 2.5, stopAtButtonIndicator);  // move until you reach the mobile goal
+   mobilePick();
+
    // drop the cone
-   dropcone(400, 500, 3000, 1200, 1200, 500) ;
+   dropcone(400, 500, 3000, 1200, 1200, 800) ;
   	   //    millisec back up, armangle, maxarmdown, millisec arm down after armangle,
       	//        millisec cone open, time arm up
-   //
-    // move mobile arm up - forward
-      moveMobileScoop('U',127);
-     //move('F', 1, false);  // forward to bar
-      wait1Msec(1000);
-      moveMobileScoop('U',60);
   // back up start
-   move('B', 1.75, false);  // back up a little
+   move('B', 1.25, false);  // back up a little
    //
    // set left/right
      if (SensorValue[jump] == 1) // jump is out
@@ -316,12 +322,22 @@ void GSautonomousShort()
 
 	// pull the arms back
 	//
-   // move mobile arm up - forward
-      moveMobileScoop('D',127);
-      wait1Msec(500);
+   // move mobile arm up - forward // first time hopefully over the bump
+      moveMobileScoop('U',127);
+      wait1Msec(800);
+      moveMobileScoop('D',100);
+      wait1Msec(100);
+      move('B', .2, false);  // backup first time
       stopMobileScoop();
-	// back up
-     move('B', .5, false);  // forward to bar
+      // back up
+	   // move mobile arm up and back // second time trying for 5-point zone
+      moveMobileScoop('U',127);
+      wait1Msec(1000);
+      moveMobileScoop('D',100);
+      wait1Msec(300);
+      move('B', .5, false);  // backup second time
+      stopMobileScoop();
+      move('B', .5, false);  // backup rest of second time
 }
 /**void GSautonomous()
 {
@@ -399,9 +415,10 @@ while (true)
 	}
 	else if (vexRT[Btn8L] == 1)
 	{
- 		motor[ConeGrabberMotor] = 100; // fast close 8L
- 		 conePressureToggle = 0 ; //
 
+ 		//motor[ConeGrabberMotor] = 100; // fast close 8L
+ 		// conePressureToggle = 0 ; //
+GSautonomousMobileGoal();
 	}
 	else if (vexRT[Btn8U] == 1)
 	{
@@ -457,11 +474,11 @@ while (true)
 	{
 				  mobilePressureToggle  = 0;
 		   //1635 back /2245 down / 2480 down / 4095 up
-		    if ( SensorValue(mobileangle) < 2245 ) // push out to front
+		    if ( SensorValue(mobileangle) < 2235 ) // push out to front
 		    {
 		    	motor[MobileScoop] = -40;
 		    }
-		    else if ( SensorValue(mobileangle) > 2480 ) // pull back to inside
+		    else if ( SensorValue(mobileangle) > 2445 ) // pull back to inside
 		    {
 		    	motor[MobileScoop] = 40;
 		    }
@@ -473,34 +490,10 @@ while (true)
   }
     else if (vexRT[Btn7L] == 1 ) // pull in mobile goal
   {
-  	//going forward
-    int speedf = 70;
-  	motor[LeftFrontWheel] = speedf;
-		motor[LeftBackWheel] = -1 * speedf;
-		motor[RightFrontWheel] = -1 * speedf;
-		motor[RightBackWheel] = speedf;
-  	//bring mobile goal in
-		motor[MobileScoop]=127;
-		wait1Msec(500);
-		motor[LeftFrontWheel] = 0;
-		motor[LeftBackWheel] = 0;
-		motor[RightFrontWheel] = 0;
-		motor[RightBackWheel] = 0;
-		motor[MobileScoop]=60;
+    mobilePick();
     mobilePressureToggle  = 1;
-		}
-  //7L - autonomous
-/**
-  else if (vexRT[Btn7L] == 1 ) //
-  {
-  	//dropcone(400, 500, 3000, 1200, 1200, 500) ;
-  	//    millisec back up, armangle, maxarmdown, millisec arm down after armangle,,  millisec cone open, time arm up
-
- GSautonomousMobileGoal();
-
-  }
-  **/
-
+    //GSautonomousMobileGoal();
+	}
 	else
 	{
 		if (  mobilePressureToggle  == 0) {
@@ -510,22 +503,7 @@ while (true)
 
 	// run autonomous when 7R is pushed
 
-/**
-	if (vexRT[Btn7R] == 1)
-	{
-	  	GSautonomous();
-    // continue;
 
-
-       motor[MobileScoop] = 0;
-
-	}
-	if (vexRT[Btn7L] == 1){
-		 if( SensorValue[bumper]  == 1 )
-     {  motor[MobileScoop] = -127; }
-
-  }
-  **/
 	/** coding partner button 6 as a sample
 	    just add Xmtr2 to the button name
 	if (vexRT[Btn6DXmtr2] == 1) // 6 down will run autonomous
@@ -534,8 +512,8 @@ while (true)
   }
   **/
 
- 	     	  //writeDebugStreamLine(" The mobile lifter value at %d  ", SensorValue(mobileangle));
-         //  writeDebugStreamLine(" The arm lifter value at %d  ", SensorValue(armangle));
+ 	     	//  writeDebugStreamLine(" The mobile lifter value at %d  ", SensorValue(mobileangle));
+//         writeDebugStreamLine(" The arm lifter value at %d  ", SensorValue(armangle));
            /**
 			     	    clearLCDLine(0);                                  // clear the top VEX LCD line
 						    clearLCDLine(1);                                  // clear the bottom VEX LCD line
