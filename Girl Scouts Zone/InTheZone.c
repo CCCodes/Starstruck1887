@@ -58,6 +58,7 @@
    float grabberOpenTime = .25;
    float finalBackTime = .75;
    int conePressureToggle = 0 ; // no cone pressure 8U turns it on and any 8 turns it off
+   int mobilePressureToggle = 0; // mobile pressure indicator
 void move(char direction, float time, bool useBumper)// time in seconds
 {
 	switch (direction)
@@ -445,14 +446,16 @@ while (true)
 
 	  // 2702 is full outside
 		motor[MobileScoop] = 127;
+		  mobilePressureToggle  = 0;
 	}
 	else if (vexRT[Btn7U] == 1) //towards the outside
 	{
  		motor[MobileScoop] = -127;
-
+		  mobilePressureToggle  = 0;
 	}
 	else if (vexRT[Btn7R] == 1) // set to scoop
 	{
+				  mobilePressureToggle  = 0;
 		   //1635 back /2245 down / 2480 down / 4095 up
 		    if ( SensorValue(mobileangle) < 2245 ) // push out to front
 		    {
@@ -468,6 +471,24 @@ while (true)
 		    }
 
   }
+    else if (vexRT[Btn7L] == 1 ) // pull in mobile goal
+  {
+  	//going forward
+    int speedf = 70;
+  	motor[LeftFrontWheel] = speedf;
+		motor[LeftBackWheel] = -1 * speedf;
+		motor[RightFrontWheel] = -1 * speedf;
+		motor[RightBackWheel] = speedf;
+  	//bring mobile goal in
+		motor[MobileScoop]=127;
+		wait1Msec(500);
+		motor[LeftFrontWheel] = 0;
+		motor[LeftBackWheel] = 0;
+		motor[RightFrontWheel] = 0;
+		motor[RightBackWheel] = 0;
+		motor[MobileScoop]=60;
+    mobilePressureToggle  = 1;
+		}
   //7L - autonomous
 /**
   else if (vexRT[Btn7L] == 1 ) //
@@ -482,7 +503,8 @@ while (true)
 
 	else
 	{
-		motor[MobileScoop] = 0;
+		if (  mobilePressureToggle  == 0) {
+		motor[MobileScoop] = 0;}
 
 	}
 
