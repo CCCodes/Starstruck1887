@@ -123,7 +123,7 @@ void stopMobileScoop()
 {
 		motor[MobileScoop] = 0;
 }
-void moveMobileScoop (char dir, int speed ){
+void moveMobileScoop (char dir, int speed  ){
 	if (dir == 'D'){
 		motor[MobileScoop] = speed;
 	}
@@ -133,6 +133,29 @@ void moveMobileScoop (char dir, int speed ){
 	}
 }
 
+void moveMobileScoopToMax (char dir, int speed ,   float maxTime ) // max time in seconds
+{
+	 int countRunTimeMsec = 0;
+	 if (dir == 'D')
+	{
+		motor[MobileScoop] = speed;
+		while (SensorValue[mobileangle] > 1580 && countRunTimeMsec < maxTime * 1000.0)
+		{
+			wait1Msec(10);
+			countRunTimeMsec += 10;
+		} // stopped because max time exceeded or angle too far
+	}
+	else // up
+	{
+		motor[MobileScoop] = speed * -1;
+		while (SensorValue[mobileangle] < 3500 && countRunTimeMsec < maxTime * 1000.0)
+		{
+			wait1Msec(10);
+			countRunTimeMsec += 10;
+		} // stopped because max time exceeded or angle too far
+	}
+	motor[MobileScoop] = 0;
+}
 
 void stopHangArm()
 {
@@ -226,7 +249,7 @@ void mobilePick(){
 		motor[RightBackWheel] = 0;
 		motor[MobileScoop]=60;
 }
-void GSautonomousReal()
+void GSautonomousJustPole()
 {
    // the grabber will snap shut for a time and then apply low pressure until it opens
    closeConeGrabber ( grabberFastSpeed);
@@ -323,21 +346,22 @@ void GSautonomousOnlyPickCone()
 	// pull the arms back
 	//
    // move mobile arm up - forward // first time hopefully over the bump
-      moveMobileScoop('U',127);
-      wait1Msec(800);
-      moveMobileScoop('D',100);
-      wait1Msec(100);
+      moveMobileScoopToMax ('U',127,.5);
+      moveMobileScoopToMax('D',127,.4);
       move('B', .2, false);  // backup first time
-      stopMobileScoop();
-      // back up
+
 	   // move mobile arm up and back // second time trying for 5-point zone
-      moveMobileScoop('U',127);
-      wait1Msec(1000);
-      moveMobileScoop('D',100);
-      wait1Msec(300);
-      move('B', .5, false);  // backup second time
-      stopMobileScoop();
-      move('B', .5, false);  // backup rest of second time
+      moveMobileScoopToMax ('U',127,.8);
+       move('B', .2, false);
+      moveMobileScoopToMax('D',127,.5);
+
+      move('B', .2, false);  // backup rest of third time
+	   // move mobile arm up and back // third time just drop it
+      moveMobileScoopToMax ('U',127,.8);
+       move('B', .2, false);
+      moveMobileScoopToMax('D',127,.5);
+
+      move('B', .2, false);  // backup rest of second time
 }
 /**void GSautonomous()
 {
