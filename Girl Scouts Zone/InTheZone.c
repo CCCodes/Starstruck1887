@@ -247,7 +247,7 @@ void mobilePick(){
 		motor[LeftBackWheel] = 0;
 		motor[RightFrontWheel] = 0;
 		motor[RightBackWheel] = 0;
-		motor[MobileScoop]=60;
+		motor[MobileScoop]=50;
 }
 void GSautonomousJustPole()
 {
@@ -318,7 +318,7 @@ void GSautonomousOnlyPickCone()
    mobilePick();
 
    // drop the cone
-   dropcone(400, 500, 3000, 1200, 1200, 800) ;
+   dropcone(400, 500, 3000, 800, 1200, 800) ;
   	   //    millisec back up, armangle, maxarmdown, millisec arm down after armangle,
       	//        millisec cone open, time arm up
   // back up start
@@ -341,27 +341,28 @@ void GSautonomousOnlyPickCone()
    //
    // go forward a long time // to get over the first thing
 	 //
-     move('F', 3.5, false);  // forward to bar
-
+     move('F', 2, false);  // forward to bar //changecomp was 3.5 s after turn around (back to bar)
+     	motor[MobileScoop] = 0;
+     	 move('B', .1, false);  // backup first time
 	// pull the arms back
 	//
    // move mobile arm up - forward // first time hopefully over the bump
       moveMobileScoopToMax ('U',127,.5);
       moveMobileScoopToMax('D',127,.4);
-      move('B', .2, false);  // backup first time
+      move('B', .1, false);  // backup first time
 
 	   // move mobile arm up and back // second time trying for 5-point zone
       moveMobileScoopToMax ('U',127,.8);
-       move('B', .2, false);
+       move('B', .1, false);
       moveMobileScoopToMax('D',127,.5);
 
-      move('B', .2, false);  // backup rest of third time
+      move('B', .1, false);  // backup rest of third time
 	   // move mobile arm up and back // third time just drop it
       moveMobileScoopToMax ('U',127,.8);
-       move('B', .2, false);
+       move('B', .1, false);
       moveMobileScoopToMax('D',127,.5);
 
-      move('B', .2, false);  // backup rest of second time
+      move('B', .1, false);  // backup rest of second time
 }
 /**void GSautonomous()
 {
