@@ -1,4 +1,4 @@
-#pragma config(Sensor, in1,    mobileangle,       sensorPotentiometer) //1635 back /2245 down / 2480 down / 4095 up
+#pragma config(Sensor, in1,    mobileangle,       sensorPotentiometer) // 200 back / 990 down 1 / 1010 down 2 / 1831 up   //1635 back /2245 down / 2480 down / 4095 up
 #pragma config(Sensor, in2,    armangle,          sensorPotentiometer) // 2122 is up / 845 right angle / 240 down
 #pragma config(Sensor, dgtl1,  jump,           sensorDigitalIn)
 #pragma config(Sensor, dgtl2,  bumper,         sensorTouch)
@@ -139,7 +139,7 @@ void moveMobileScoopToMax (char dir, int speed ,   float maxTime ) // max time i
 	 if (dir == 'D')
 	{
 		motor[MobileScoop] = speed;
-		while (SensorValue[mobileangle] > 1580 && countRunTimeMsec < maxTime * 1000.0)
+		while (SensorValue[mobileangle] > 275 && countRunTimeMsec < maxTime * 1000.0)
 		{
 			wait1Msec(10);
 			countRunTimeMsec += 10;
@@ -148,7 +148,7 @@ void moveMobileScoopToMax (char dir, int speed ,   float maxTime ) // max time i
 	else // up
 	{
 		motor[MobileScoop] = speed * -1;
-		while (SensorValue[mobileangle] < 3500 && countRunTimeMsec < maxTime * 1000.0)
+		while (SensorValue[mobileangle] < 1730 && countRunTimeMsec < maxTime * 1000.0)
 		{
 			wait1Msec(10);
 			countRunTimeMsec += 10;
@@ -305,10 +305,10 @@ void GSautonomousOnlyPickCone()
    moveHangArm('U', hangArmUpSpeed); // move up now that you grabbed the cone
    move('F', 1, false);  // move while lifting stop arm
 		   //1635 back /2245 down / 2480 down / 4095 up
-		    if ( SensorValue(mobileangle) < 2245 ) // push out to front
+		    if ( SensorValue(mobileangle) < 1000 ) // push out to front
 		    {
-		    	motor[MobileScoop] = -40;
-		    	while  (SensorValue(mobileangle) < 2245){};
+		    	motor[MobileScoop] = -50;
+		    	while  (SensorValue(mobileangle) < 1000){};
 		    	motor[MobileScoop] = 0;
 		    }
    move('F', 1, false);  // move while lifting stop arm
@@ -318,7 +318,7 @@ void GSautonomousOnlyPickCone()
    mobilePick();
 
    // drop the cone
-   dropcone(400, 500, 3000, 800, 1200, 800) ;
+   dropcone(400, 500, 3000, 800, 1200, 1000) ;
   	   //    millisec back up, armangle, maxarmdown, millisec arm down after armangle,
       	//        millisec cone open, time arm up
   // back up start
@@ -335,7 +335,7 @@ void GSautonomousOnlyPickCone()
 		}
 
 	// turn around
-    move(turnPoleDirection, 1.9, false);  // turn to go back to goal
+    move(turnPoleDirection, 1.5, false);  // turn to go back to goal
 
    //
    //
@@ -443,9 +443,9 @@ while (true)
 	else if (vexRT[Btn8L] == 1)
 	{
 
- 		//motor[ConeGrabberMotor] = 100; // fast close 8L
- 		// conePressureToggle = 0 ; //
-GSautonomousMobileGoal();
+ 	motor[ConeGrabberMotor] = 100; // fast close 8L
+ 		conePressureToggle = 0 ; //
+//GSautonomousMobileGoal();
 	}
 	else if (vexRT[Btn8U] == 1)
 	{
@@ -501,11 +501,11 @@ GSautonomousMobileGoal();
 	{
 				  mobilePressureToggle  = 0;
 		   //1635 back /2245 down / 2480 down / 4095 up
-		    if ( SensorValue(mobileangle) < 2235 ) // push out to front
+		    if ( SensorValue(mobileangle) < 861 ) // push out to front
 		    {
-		    	motor[MobileScoop] = -40;
+		    	motor[MobileScoop] = -50;
 		    }
-		    else if ( SensorValue(mobileangle) > 2445 ) // pull back to inside
+		    else if ( SensorValue(mobileangle) > 1010 ) // pull back to inside
 		    {
 		    	motor[MobileScoop] = 40;
 		    }
@@ -519,7 +519,7 @@ GSautonomousMobileGoal();
   {
     mobilePick();
     mobilePressureToggle  = 1;
-    //GSautonomousMobileGoal();
+  //  GSautonomousMobileGoal();
 	}
 	else
 	{
@@ -539,7 +539,7 @@ GSautonomousMobileGoal();
   }
   **/
 
- 	     	//  writeDebugStreamLine(" The mobile lifter value at %d  ", SensorValue(mobileangle));
+ 	     	  writeDebugStreamLine(" The mobile lifter value at %d  ", SensorValue(mobileangle));
 //         writeDebugStreamLine(" The arm lifter value at %d  ", SensorValue(armangle));
            /**
 			     	    clearLCDLine(0);                                  // clear the top VEX LCD line
