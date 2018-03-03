@@ -139,7 +139,7 @@ void moveMobileScoopToMax (char dir, int speed ,   float maxTime ) // max time i
 	 if (dir == 'D')
 	{
 		motor[MobileScoop] = speed;
-		while (SensorValue[mobileangle] > 275 && countRunTimeMsec < maxTime * 1000.0)
+		while (SensorValue[mobileangle] > 275 && countRunTimeMsec < maxTime * 1000.0) // mobile scoop back stop
 		{
 			wait1Msec(10);
 			countRunTimeMsec += 10;
@@ -148,7 +148,7 @@ void moveMobileScoopToMax (char dir, int speed ,   float maxTime ) // max time i
 	else // up
 	{
 		motor[MobileScoop] = speed * -1;
-		while (SensorValue[mobileangle] < 1730 && countRunTimeMsec < maxTime * 1000.0)
+		while (SensorValue[mobileangle] < 1730 && countRunTimeMsec < maxTime * 1000.0) // mobile school up stop
 		{
 			wait1Msec(10);
 			countRunTimeMsec += 10;
@@ -247,7 +247,7 @@ void mobilePick(){
 		motor[LeftBackWheel] = 0;
 		motor[RightFrontWheel] = 0;
 		motor[RightBackWheel] = 0;
-		motor[MobileScoop]=50;
+		motor[MobileScoop]=40; // tension after mobile pick
 }
 void GSautonomousJustPole()
 {
@@ -307,7 +307,7 @@ void GSautonomousOnlyPickCone()
 		   //1635 back /2245 down / 2480 down / 4095 up
 		    if ( SensorValue(mobileangle) < 1000 ) // push out to front
 		    {
-		    	motor[MobileScoop] = -50;
+		    	motor[MobileScoop] = -50; // mobile scoop set to scoop
 		    	while  (SensorValue(mobileangle) < 1000){};
 		    	motor[MobileScoop] = 0;
 		    }
@@ -343,6 +343,7 @@ void GSautonomousOnlyPickCone()
 	 //
      move('F', 3.65, false);  // forward to bar //changecomp was 3.5 s after turn around (back to bar)
      move(turnPoleDirection, .2, false);
+  // and now start wiggling the mobile goal off.
      motor[MobileScoop] = 0;
      	 move('B', .1, false);  // backup first time
 	// pull the arms back
