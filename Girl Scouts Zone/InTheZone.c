@@ -353,12 +353,12 @@ void GSautonomousOnlyPickCone()
 
 	 move('F', 2.5, stopAtButtonIndicator);  // move until you reach the mobile goal
    mobilePick();
-
+   motor[MobileScoop]=70;
    // drop the cone
    dropcone(400, 500, 3000, 800, 1200, 1000) ;
   	   //    millisec back up, armangle, maxarmdown, millisec arm down after armangle,
       	//        millisec cone open, time arm up
-   motor[MobileScoop]=50;
+		move('F', .2, false);  // Forward  a little
  // back up start
    move('B', 1.25, false);  // back up a little
    //
@@ -383,14 +383,14 @@ void GSautonomousOnlyPickCone()
 
 
 	// turn around
-    move(turnPoleDirection, 1.5, false);  // turn to go back to goal
+    move(turnPoleDirection, 1.75, false);  // turn to go back to goal
 	  motor[MobileScoop]=40;
    //
    //
    // go forward a long time // to get over the first thing
 	 //
      move('F', 3.65, false);  // long run to the bar
-     move(turnPoleDirection, .2, false);
+     move(turnPoleDirection, .15, false);
   // and now start wiggling the mobile goal off.
      motor[MobileScoop] = 0;
      	 move('B', .1, false);  // backup first time
@@ -566,9 +566,9 @@ while (true)
   }
     else if (vexRT[Btn7L] == 1 ) // pull in mobile goal
   {
-   // mobilePick();
-   // mobilePressureToggle  = 1;
-    GSautonomousMobileGoal();
+   mobilePick();
+   mobilePressureToggle  = 1;
+   // GSautonomousMobileGoal();
 	}
 	else
 	{
