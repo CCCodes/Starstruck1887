@@ -283,7 +283,7 @@ void mobilePick(){
 		motor[LeftBackWheel] = 0;
 		motor[RightFrontWheel] = 0;
 		motor[RightBackWheel] = 0;
-		motor[MobileScoop]=40; // tension after mobile pick
+		motor[MobileScoop]=50; // tension after mobile pick
 }
 void GSautonomousJustPole()
 {
